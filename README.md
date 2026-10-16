@@ -70,4 +70,4 @@ Leave out `"wifi"` when the Pi uses a network cable. The screen reads the file o
 
 ## About this repository
 
-Releases here are published automatically: there is no code to build. Each player version is published to the apt repository, where screens pick it up. A new SD card image is only published when the image itself changes. An older image is fine to use, because it updates itself to the newest player once it's connected.
+Releases here are published automatically: there is no code to build. Each version is published to the apt repository, where screens pick it up, together with a new SD card image. An older image is fine to use too, because it updates itself to the newest player once it's connected.
