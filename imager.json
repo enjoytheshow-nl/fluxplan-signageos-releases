@@ -1,0 +1,20 @@
+{
+  "os_list": [
+    {
+      "name": "Fluxplan Signage",
+      "description": "Shows a Fluxplan screen on a TV. Version 0.2.0.",
+      "url": "https://github.com/enjoytheshow-nl/fluxplan-signage-releases/releases/download/v0.2.0/fluxplan-signage-0.2.0.img.xz",
+      "icon": "https://enjoytheshow-nl.github.io/fluxplan-signage-releases/icon.png",
+      "website": "https://github.com/enjoytheshow-nl/fluxplan-signage-releases",
+      "release_date": "2026-10-16",
+      "image_download_size": 828270656,
+      "image_download_sha256": "748b9b2ab1068efd28861851e2d7795c06dcf9559010342286ecbe2454d350bc",
+      "extract_size": 4294967296,
+      "extract_sha256": "675528af4b717cd13c3e3b7053b328b63089c347216a557fd01f39ad2221f212",
+      "devices": [
+        "pi5-64bit",
+        "pi4-64bit"
+      ]
+    }
+  ]
+}
