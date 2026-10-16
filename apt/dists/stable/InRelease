@@ -4,30 +4,30 @@ Hash: SHA512
 Architectures: arm64
 Codename: stable
 Components: main
-Date: Fri, 16 Oct 2026 20:41:46 +0000
+Date: Fri, 16 Oct 2026 20:49:19 +0000
 Label: Fluxplan SignageOS
 Origin: Fluxplan SignageOS
 Suite: stable
 MD5Sum:
- 5f1c5a3be1f480a9ac95b573dc68f96c              160 Release
- ae3dc55e6aa3a1583b4aa448c9fa9567             2684 main/binary-arm64/Packages
- 9b506c8b908230da5072988b8f4df508             1010 main/binary-arm64/Packages.gz
+ fb2f4979747dc84df9c5777672516914              160 Release
+ fff35bdae2153b9c3b4193b6eb801867             3582 main/binary-arm64/Packages
+ 788fc3d2fc6efebf6da9ed718b8f20d0             1196 main/binary-arm64/Packages.gz
 SHA1:
- f756bc6beaadf2257c9ba26f6014037a7faff704              160 Release
- 628a27a28d7a0a42d56456fe6bd4e001b347a71e             2684 main/binary-arm64/Packages
- 6e005e7665dc96f677ed1e23f3d1870174ea7086             1010 main/binary-arm64/Packages.gz
+ 7c6b5b095933001f1fd2313d7bdac37f90c928c2              160 Release
+ 34e50edaa31fb43ea266bb75ac0eb3ef908912a8             3582 main/binary-arm64/Packages
+ 73aaee6acfffd40057418754ca664388a2776789             1196 main/binary-arm64/Packages.gz
 SHA256:
- c4558fb514eca1834ce884de46837e0b785c04f441685b6c1836d188040ea251              160 Release
- 8589923d5203a5a7dca749bbd21965564dcd138e5898fa524b43b5e5a933c3fc             2684 main/binary-arm64/Packages
- b17298370e327e250d494074b246ade6d9de12700404e6283e34dc8e22ce38a3             1010 main/binary-arm64/Packages.gz
+ 4ea1cbd369841e67413c8c3d937b84bcf3306101e1eaf6f93c069129da97983a              160 Release
+ a0236c830edffb25138accf238a09c5ef99ccbfbd4141b8b65e5005e5bdf5a1b             3582 main/binary-arm64/Packages
+ 6741ba47bf864b2f7f3a2c68c7fb5a15c1467b2ac01fac2ee2b549ffab092478             1196 main/binary-arm64/Packages.gz
 SHA512:
- 68db4712c3de4172879644f08e9c5acb5c37d3ea5c423b617ade280045e5356fbb4386c863ea5d4f2478d9b6c2fcb03134f508889f15b1c4166a578780ce1451              160 Release
- 26c0a752db94fa8872d482ab5f0eddbba021bc98bd89568f2a55c6cea54552cdb95ae76860e131c0fd743f327b96887bf5dd2ce02479b492e362f8748a939d7f             2684 main/binary-arm64/Packages
- 672c54a18c58eaf6decf9eb7bdddbbfcc41c6c3280146034bd515b4a534dceba6dfd2abcfb2711412b81c86f4e8ae0b9ce0d7fd0a59f5ef6bb8f2aa8777fe944             1010 main/binary-arm64/Packages.gz
+ 3683583c43662cfb907283ebb5552f55700c9a0b51483045476c80454c6364d7fd6e5790f20da844dc5c011b3ad4f6dead237c10f0f3a8b864c9c60a42904469              160 Release
+ a4ad817f47d6d18eb23a6a36e02794e9564a0de0059bc4c4478e18ca425de4de94043f9413f295888118191d0632dd2c497e5c4e1cc14bf91df61d4805a61370             3582 main/binary-arm64/Packages
+ afdc1a9617a26c566fd120df4a537a25770fd329677495dce553cc9e8fa0b1d0e9485c15d1966327420421bc9eca7bfc71bd026ce9fd23de37587e734a56b8b5             1196 main/binary-arm64/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQTFf4WPqbJ+6Y6jE+9aOc2PnzDPNQUCatKMCgAKCRBaOc2PnzDP
-NW9NAP9V4cpdrKMkG8doCJJRtuoEuGDDKaHZpXGmRPiRm0zflwD6A3IVY3VvhLXP
-8kdRmQdJKQYi3r7RQKGDVEKLA6OQ8AU=
-=Rkan
+iHUEARYKAB0WIQTFf4WPqbJ+6Y6jE+9aOc2PnzDPNQUCatKNzwAKCRBaOc2PnzDP
+NYIZAQDUrysmgvAxqSeDm66upUjUl738JDtvNfHJ0K03MK0UgAD+MfEMY4KlfCsv
+bSxmXYhWpOk/JomcA9W+OjfXILSGgAg=
+=chmD
 -----END PGP SIGNATURE-----
