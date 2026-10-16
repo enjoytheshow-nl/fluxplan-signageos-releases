@@ -1,16 +1,16 @@
 {
   "os_list": [
     {
-      "name": "Fluxplan Signage",
-      "description": "Shows a Fluxplan screen on a TV. Version 0.2.0.",
-      "url": "https://github.com/enjoytheshow-nl/fluxplan-signage-releases/releases/download/v0.2.0/fluxplan-signage-0.2.0.img.xz",
-      "icon": "https://enjoytheshow-nl.github.io/fluxplan-signage-releases/icon.png",
-      "website": "https://github.com/enjoytheshow-nl/fluxplan-signage-releases",
+      "name": "Fluxplan SignageOS",
+      "description": "Shows a Fluxplan screen on a TV. Version 0.3.0.",
+      "url": "https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases/download/v0.3.0/fluxplan-signageos-0.3.0.img.xz",
+      "icon": "https://enjoytheshow-nl.github.io/fluxplan-signageos-releases/icon.png",
+      "website": "https://github.com/enjoytheshow-nl/fluxplan-signageos-releases",
       "release_date": "2026-10-16",
-      "image_download_size": 828270656,
-      "image_download_sha256": "748b9b2ab1068efd28861851e2d7795c06dcf9559010342286ecbe2454d350bc",
+      "image_download_size": 829354116,
+      "image_download_sha256": "475481828a00ef801d55f1e46e646b8993fcc12210ac248eb9bbc23292fc3ebf",
       "extract_size": 4294967296,
-      "extract_sha256": "675528af4b717cd13c3e3b7053b328b63089c347216a557fd01f39ad2221f212",
+      "extract_sha256": "0b98e405c6b05215b7d2f7729a5a102c242548a076d95bafe209e5f8249119f0",
       "devices": [
         "pi5-64bit",
         "pi4-64bit"
