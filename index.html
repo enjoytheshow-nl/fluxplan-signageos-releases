@@ -1,14 +1,174 @@
 <!DOCTYPE html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Fluxplan Signage</title>
-<style>body{font:16px/1.5 system-ui,sans-serif;max-width:40rem;margin:3rem auto;padding:0 1rem;color:#14170f;background:#f6f6f2}code{background:#e8e9e3;padding:.1rem .3rem;border-radius:.3rem}</style></head>
+<html lang="en" translate="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluxplan SignageOS</title>
+<meta name="description" content="Turn a Raspberry Pi into a self-maintaining Fluxplan screen. Download the SD card image and set it up with your phone.">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #f7f7f4; --surface: #ffffff; --line: #e2e2dc; --text: #141414; --muted: #5c5c57;
+        --accent: oklch(0.52 0.11 160); --accent-soft: oklch(0.95 0.03 160); --code: #efefea;
+        --band: #000; --band-text: #fbfbf8; --band-muted: #a3a3a3; --band-accent: oklch(0.76 0.13 160);
+    }
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #0b0b0b; --surface: #141414; --line: #262626; --text: #fbfbf8; --muted: #a3a3a3;
+            --accent: oklch(0.76 0.13 160); --accent-soft: oklch(0.28 0.05 160); --code: #1f1f1f;
+        }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif; }
+    a { color: var(--accent); text-underline-offset: .2em; }
+    h1, h2, h3 { font-family: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif; line-height: 1.1; letter-spacing: -.02em; margin: 0; }
+    h2 { font-size: clamp(1.6rem, 3vw, 2rem); margin-bottom: .75rem; }
+    h3 { font-size: 1.15rem; margin-bottom: .35rem; }
+    p { margin: 0 0 1rem; }
+    code { font: .88em/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code); padding: .12rem .35rem; border-radius: .3rem; overflow-wrap: anywhere; }
+    pre { margin: 0 0 1rem; padding: 1rem 1.1rem; background: var(--code); border-radius: .7rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+    pre code { background: none; padding: 0; font-size: .85rem; }
+    .wrap { max-width: 64rem; margin: 0 auto; padding: 0 1rem; }
+
+    .hero { background: var(--band); color: var(--band-text); padding: 3.5rem 0 4rem; }
+    .brand { display: flex; align-items: center; gap: .75rem; margin-bottom: 2.5rem; color: var(--band-accent); font-weight: 600; }
+    .brand::before { content: ''; width: 2rem; height: 3px; background: var(--band-accent); }
+    .hero h1 { font-size: clamp(2.3rem, 6vw, 4rem); max-width: 16ch; margin-bottom: 1.25rem; }
+    .hero p { color: var(--band-muted); font-size: 1.15rem; max-width: 38rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
+    .button { display: inline-flex; align-items: center; padding: .8rem 1.2rem; border-radius: .7rem; font-weight: 600; text-decoration: none; }
+    .button.primary { background: var(--band-accent); color: #000; }
+    .button.secondary { color: var(--band-text); border: 1px solid #333; }
+
+    section { padding: 3.5rem 0; border-bottom: 1px solid var(--line); }
+    .lead { color: var(--muted); max-width: 40rem; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); margin-top: 1.5rem; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; padding: 1.25rem; }
+    .card p { color: var(--muted); margin: 0; }
+
+    ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 1.5rem 0 0; display: grid; gap: 1rem; }
+    ol.steps li { counter-increment: step; display: grid; grid-template-columns: 2.5rem 1fr; gap: 1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; padding: 1.25rem; }
+    ol.steps li::before { content: counter(step); display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+    ol.steps p { color: var(--muted); margin: 0; }
+    ul.list { padding-left: 1.2rem; margin: 0 0 1rem; }
+    ul.list li { margin-bottom: .5rem; }
+    .note { padding: 1rem 1.1rem; border-radius: .7rem; background: var(--accent-soft); margin-top: 1.5rem; }
+    .two { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); }
+
+    footer { padding: 2.5rem 0 3rem; color: var(--muted); font-size: .9rem; }
+</style>
+</head>
 <body>
-<h1>Fluxplan Signage</h1>
-<p>SD card images and player updates for Fluxplan screens on a Raspberry Pi 4 or 5.</p>
-<ul>
-<li><a href="https://github.com/enjoytheshow-nl/fluxplan-signage-releases/releases/latest">Download the latest image</a></li>
-<li>Raspberry Pi Imager repository: <code>imager.json</code></li>
-<li>Apt repository: <code>apt/</code> (signed with <code>apt/fluxplan-signage-archive-keyring.asc</code>)</li>
-</ul>
+
+<header class="hero">
+    <div class="wrap">
+        <div class="brand">Fluxplan SignageOS</div>
+        <h1>A Fluxplan screen that looks after itself</h1>
+        <p>Fluxplan SignageOS turns a Raspberry Pi into a screen for <a href="https://fluxplan.nl" style="color:inherit">Fluxplan</a>: the day's planning in the lobby, or a room's schedule next to its door. Set it up once with your phone. No keyboard, mouse or separate signage software needed.</p>
+        <div class="actions">
+            <a class="button primary" href="https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases/latest">Download the latest image</a>
+            <a class="button secondary" href="#install">How to install</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section>
+        <div class="wrap">
+            <h2>What it does</h2>
+            <p class="lead">The screen shows the view you pick for it in the Fluxplan admin, and keeps running without anyone touching it.</p>
+            <div class="grid">
+                <div class="card"><h3>Set up with your phone</h3><p>The TV shows a temporary Wi-Fi network and a QR code. Join it, and a setup page in Dutch or English opens by itself.</p></div>
+                <div class="card"><h3>Managed from Fluxplan</h3><p>Pair a screen with a code, choose what it shows, then update, restart, shut down or reset it from the admin.</p></div>
+                <div class="card"><h3>Updates itself</h3><p>Debian, Raspberry Pi and player updates are installed at night. A new screen fetches the newest player as soon as it's connected.</p></div>
+                <div class="card"><h3>Repairs itself</h3><p>A page that freezes is reloaded, a stuck browser restarted, and in the end the whole Pi. After a power or network cut, it comes back by itself.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="wrap two">
+            <div>
+                <h2>What you need</h2>
+                <ul class="list">
+                    <li>A <strong>Raspberry Pi 5 or 4</strong> with its official power supply</li>
+                    <li>A <strong>microSD card</strong> of 8 GB or more</li>
+                    <li>A <strong>TV or monitor</strong> with HDMI, plus a micro-HDMI cable for the Pi</li>
+                    <li>A <strong>network</strong>: Wi-Fi or a network cable</li>
+                    <li>A <strong>Fluxplan</strong> you can sign in to as an admin</li>
+                </ul>
+            </div>
+            <div>
+                <h2>Where to get it</h2>
+                <ul class="list">
+                    <li>The SD card image: <a href="https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases/latest">latest release</a>, with a SHA-256 checksum to check your download</li>
+                    <li>Raspberry Pi Imager can list it too: <code>rpi-imager --repo https://enjoytheshow-nl.github.io/fluxplan-signageos-releases/imager.json</code></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="install">
+        <div class="wrap">
+            <h2>Installing a screen</h2>
+            <p class="lead">It takes about ten minutes, most of it writing the SD card.</p>
+            <ol class="steps">
+                <li><div><h3>Write the image to a microSD card</h3><p>Use <a href="https://www.raspberrypi.com/software/">Raspberry Pi Imager</a> (<em>Choose OS → Use custom</em>) or <a href="https://etcher.balena.io/">balenaEtcher</a>. Leave Imager's "OS customisation" off: the screen sets itself up.</p></div></li>
+                <li><div><h3>Start the Pi</h3><p>Put the card in the Pi, then connect the TV, a network cable if you use one, and lastly the power.</p></div></li>
+                <li><div><h3>Set it up with your phone</h3><p>Join the Wi-Fi network shown on the TV (<code>Fluxplan-SignageOS-…</code>) or scan the QR code. The setup page opens by itself, otherwise go to <code>http://10.42.0.1</code>. Choose Wi-Fi or a network cable, enter your Fluxplan address (for example <code>demo.fluxplan.nl</code>) and your country, then choose <em>Save and connect</em>.</p></div></li>
+                <li><div><h3>Pair it in Fluxplan</h3><p>The TV shows a pairing code. In the Fluxplan admin, open <em>Narrowcasting</em>, choose <em>Pair screen</em>, enter the code and pick what the screen shows. Within a minute, the screen shows it.</p></div></li>
+            </ol>
+            <p class="note">If something goes wrong while connecting, the TV says why and the setup network comes back, so you can try again. The full guide, in Dutch, is in the Help section of your Fluxplan admin.</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="wrap two">
+            <div>
+                <h2>Setting up in advance</h2>
+                <p>Already know the Fluxplan address and Wi-Fi details? Then you can skip the phone step. After writing the card, open it on your computer and put a file called <code>fluxplan.json</code> next to <code>FLUXPLAN-README.txt</code>:</p>
+<pre><code>{
+    "server": "demo.fluxplan.nl",
+    "country": "NL",
+    "wifi": { "ssid": "Office", "password": "secret", "hidden": false }
+}</code></pre>
+                <p>Leave out <code>"wifi"</code> when the Pi uses a network cable. The screen reads the file on its first start, then deletes it, because the file contains your Wi-Fi password.</p>
+            </div>
+            <div>
+                <h2>Looking after a screen</h2>
+                <p>In the Fluxplan admin, under <em>Narrowcasting</em>, each screen has a <em>Player</em> menu:</p>
+                <ul class="list">
+                    <li><strong>Update player</strong>: install a new version now instead of tonight.</li>
+                    <li><strong>Restart</strong>: restart the Pi.</li>
+                    <li><strong>Shut down</strong>: turn the Pi off, for example before you move it. To start it again, unplug the power and plug it back in.</li>
+                    <li><strong>Factory reset</strong>: the screen forgets your Fluxplan, its pairing and its Wi-Fi network, and goes back to setup.</li>
+                </ul>
+                <p>If a screen is offline, you can also reset it from the SD card. Create an empty file called <code>fluxplan-reset</code> next to <code>FLUXPLAN-README.txt</code>, then put the card back in the Pi.</p>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <div class="wrap">
+            <h2>Security</h2>
+            <div class="grid">
+                <div class="card"><h3>Locked to your Fluxplan</h3><p>The screen only opens its own Fluxplan, and only the views Fluxplan offers. Every other web address is blocked.</p></div>
+                <div class="card"><h3>No way in</h3><p>Nobody can log in to the Pi: the account is locked and SSH is off. The firewall only allows what setup needs.</p></div>
+                <div class="card"><h3>Signed updates</h3><p>Updates come from the signed apt repository at <code>apt/</code>. Key: <a href="apt/fluxplan-signageos-archive-keyring.asc">fluxplan-signageos-archive-keyring.asc</a>, fingerprint <code>C57F 858F A9B2 7EE9 8EA3 13EF 5A39 CD8F 9F30 CF35</code>.</p></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="wrap">
+        <p>Fluxplan SignageOS is made by <a href="https://enjoytheshow.nl">Enjoy the Show</a> for <a href="https://fluxplan.nl">Fluxplan</a>. Releases are published automatically from this <a href="https://github.com/enjoytheshow-nl/fluxplan-signageos-releases">repository</a>.</p>
+    </div>
+</footer>
+
 </body>
 </html>
