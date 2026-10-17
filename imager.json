@@ -2,15 +2,15 @@
   "os_list": [
     {
       "name": "Fluxplan SignageOS",
-      "description": "Shows a Fluxplan screen on a TV. Version 0.3.2.",
-      "url": "https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases/download/v0.3.2/fluxplan-signageos-0.3.2.img.xz",
+      "description": "Turns a Raspberry Pi into a Fluxplan screen. Version 1.0.0.",
+      "url": "https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases/download/image-v1.0.0/fluxplan-signageos-1.0.0.img.xz",
       "icon": "https://enjoytheshow-nl.github.io/fluxplan-signageos-releases/icon.png",
       "website": "https://github.com/enjoytheshow-nl/fluxplan-signageos-releases",
-      "release_date": "2026-10-16",
-      "image_download_size": 828651492,
-      "image_download_sha256": "d39238a6446d68981fa20eba3ac39ca88404ea480f695a307021556ae7172497",
-      "extract_size": 4294967296,
-      "extract_sha256": "10500a82a5368f43311c89316190c4683c5f1d491672a28e191c59bff1dcfe84",
+      "release_date": "2026-10-17",
+      "image_download_size": 826585800,
+      "image_download_sha256": "d7a972be1ed52037c3f1e06116d2119354abd5a10d57d7c61b71db0e601bab37",
+      "extract_size": 4303355904,
+      "extract_sha256": "d2702ed342f9a1827249cf70412f98ddb1a01180066fb3f274f89b08ecde8d5a",
       "devices": [
         "pi5-64bit",
         "pi4-64bit"
