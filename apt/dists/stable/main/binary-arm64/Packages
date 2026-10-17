@@ -19,25 +19,6 @@ Description: Fluxplan Signage player.
 
 Package: fluxplan-signageos
 Architecture: arm64
-Version: 0.3.1
-Priority: optional
-Section: misc
-Maintainer: Enjoy the Show <info@enjoytheshow.nl>
-Installed-Size: 9157
-Depends: cage, chromium | chromium-browser, curl, network-manager, dnsmasq-base, iw
-Filename: pool/main/f/fluxplan-signageos/fluxplan-signageos_0.3.1_arm64.deb
-Size: 3738884
-MD5sum: 0f3e8d1c7b5ffd422cb9dea27554964c
-SHA1: 21f82798a2199116d7d2238c181e3e9152346371
-SHA256: 89ac71243f2cc0ba806e1e1ba9641b559e0ddbd41702d723e1d11b42b1994c13
-SHA512: 52cc032216a31c0411424f404d5ac9c3eb8beaca91815f35d7b498a3dfd20ee5c5fdad52df1a759fefaf7505f121f9fd93e7f5c5f55726e6613e5a8c80afe013
-Homepage: https://github.com/enjoytheshow-nl/fluxplan-signageos
-Description: Fluxplan SignageOS player.
- Shows a Fluxplan screen full screen in Chromium (cage kiosk), paired to a
- Fluxplan by a code entered in its admin, with watchdogs that keep it running.
-
-Package: fluxplan-signageos
-Architecture: arm64
 Version: 0.3.2
 Priority: optional
 Section: misc
@@ -107,6 +88,25 @@ MD5sum: 9e741c551ba5c999c97ac5c72c90e13d
 SHA1: e2d1f23b842c9249d2c58af474ff3964747743a7
 SHA256: 5b464ac552f782afc622a2ccce4489a030abfa8c38c76974ad247f9406c770ea
 SHA512: ddb8608448393b7783e9dcb122822aeeafcc225d34bb1c9386d9ab529da07cd91f0c7ba1caf699487165ae7ec2d641c57af1a447222ffb19d349d69be6bd0fbc
+Homepage: https://github.com/enjoytheshow-nl/fluxplan-signageos
+Description: Fluxplan SignageOS player.
+ Shows a Fluxplan screen full screen in Chromium (cage kiosk), paired to a
+ Fluxplan by a code entered in its admin, with watchdogs that keep it running.
+
+Package: fluxplan-signageos
+Architecture: arm64
+Version: 0.4.1
+Priority: optional
+Section: misc
+Maintainer: Enjoy the Show <info@enjoytheshow.nl>
+Installed-Size: 9678
+Depends: cage, chromium | chromium-browser, curl, network-manager, dnsmasq-base, iw
+Filename: pool/main/f/fluxplan-signageos/fluxplan-signageos_0.4.1_arm64.deb
+Size: 3981538
+MD5sum: 7902123b39970450797e80548e7699ce
+SHA1: b08c2ecbc7a409cc07fedb8b9035d02dafd40f24
+SHA256: 25b28edea9b3b4a34074f7df34a8ae669db6e5826728662503a4e30580734562
+SHA512: 633ddfd9749046c78e24eda5b6dc8a440f0a2067fe970805cc6afbe704ffed4f005f32d81f7beba408737dc1e00c8f0f84c8c72636d5af8e9819412bfbc79a63
 Homepage: https://github.com/enjoytheshow-nl/fluxplan-signageos
 Description: Fluxplan SignageOS player.
  Shows a Fluxplan screen full screen in Chromium (cage kiosk), paired to a
