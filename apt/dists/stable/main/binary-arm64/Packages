@@ -1,17 +1,17 @@
 Package: fluxplan-signageos
 Architecture: arm64
-Version: 1.0.1
+Version: 1.0.2
 Priority: optional
 Section: misc
 Maintainer: Enjoy the Show <info@enjoytheshow.nl>
 Installed-Size: 9678
 Depends: cage, chromium | chromium-browser, curl, network-manager, dnsmasq-base, iw
-Filename: pool/main/f/fluxplan-signageos/fluxplan-signageos_1.0.1_arm64.deb
-Size: 3983810
-MD5sum: 8757e02ef82058996752f2ca6d8f0bbf
-SHA1: 979c696631117a459bd34021963886524b6a52b9
-SHA256: 1e7d2b69f95ac42b525cdcd1561f00ec078304f1cc8357b0f8ca49726ad5f46a
-SHA512: cd2fd8e5221546987cfa0c6343a2fc5dd654e58eb3f0a42d9d484a7fed1a3f6189ccd23ccba8e0becc8dd4e20cbff9164cc68254a44b85cc7906c9e6486475ae
+Filename: pool/main/f/fluxplan-signageos/fluxplan-signageos_1.0.2_arm64.deb
+Size: 3985960
+MD5sum: 7a28c8b93cb28480f459a1af6b835788
+SHA1: fe7b6e65a37874a9949130047b4a483316635994
+SHA256: 047b72d2d82ed724d6bae31fba2b4b81ba8715bb6b35fd636d94ca46b6b0f6b2
+SHA512: b5c298e1a9dc432172d201bb19a63c71081a1c2775f74fa443aa4f2d19f97754221978c4b4ff73924457dade51c5ec521c61ef3e50044f9c687128a5f0a4a7e5
 Homepage: https://github.com/enjoytheshow-nl/fluxplan-signageos
 Description: Fluxplan SignageOS player.
  Shows a Fluxplan screen full screen in Chromium (cage kiosk), paired to a
