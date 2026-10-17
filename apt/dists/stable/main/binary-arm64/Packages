@@ -93,3 +93,22 @@ Description: Fluxplan SignageOS player.
  Shows a Fluxplan screen full screen in Chromium (cage kiosk), paired to a
  Fluxplan by a code entered in its admin, with watchdogs that keep it running.
 
+Package: fluxplan-signageos
+Architecture: arm64
+Version: 0.3.4
+Priority: optional
+Section: misc
+Maintainer: Enjoy the Show <info@enjoytheshow.nl>
+Installed-Size: 9158
+Depends: cage, chromium | chromium-browser, curl, network-manager, dnsmasq-base, iw
+Filename: pool/main/f/fluxplan-signageos/fluxplan-signageos_0.3.4_arm64.deb
+Size: 3752384
+MD5sum: 7bdb52150277c5c8646c2ed314797c83
+SHA1: ef9f3e84cda3c3bfa37992c514ea4650c1a08353
+SHA256: 8483e4e53ca3e3ac8bd430957678f0ad3765539120c4ac3edec0f5c5d69548d5
+SHA512: 778f09e20adc4e8d8f41f10dc194d87d1fc943fd8c3eb1ace0b7d2fb23673b6d598825cd56e3249f25e34de0d508f7d2642395c8ca32abfa70f5a5c10f60a786
+Homepage: https://github.com/enjoytheshow-nl/fluxplan-signageos
+Description: Fluxplan SignageOS player.
+ Shows a Fluxplan screen full screen in Chromium (cage kiosk), paired to a
+ Fluxplan by a code entered in its admin, with watchdogs that keep it running.
+
