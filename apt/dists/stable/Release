@@ -1,23 +1,23 @@
 Architectures: arm64
 Codename: stable
 Components: main
-Date: Sat, 17 Oct 2026 13:12:55 +0000
+Date: Sat, 17 Oct 2026 19:32:21 +0000
 Label: Fluxplan SignageOS
 Origin: Fluxplan SignageOS
 Suite: stable
 MD5Sum:
- 06d0f37e4b7a43b7585446d05e5d8f23              160 Release
- b263e134f042ba28576401808ca7567d              898 main/binary-arm64/Packages
- d242ac06b2d9f566deac61ac8e1fd840              607 main/binary-arm64/Packages.gz
+ 92b175bd24db3e492c9e5b001cd9d150              160 Release
+ f2b9e66a921d9f6e882c05926ca4b98f              898 main/binary-arm64/Packages
+ 8ae5f5b0fb349958174d1694a3b297f4              608 main/binary-arm64/Packages.gz
 SHA1:
- fce9ceecc73a2fc1d2abd3c1866045b2a989fe40              160 Release
- 357ac726d7dd4f2a5050b11609620be730bfa275              898 main/binary-arm64/Packages
- 7cc7a90201cbc719f7c338f986e6fceec6dad77f              607 main/binary-arm64/Packages.gz
+ 38b029919e10f82cfbd2cbb052c9c5f33f90269c              160 Release
+ e3520de556f1dada9577a93e655d146beb263296              898 main/binary-arm64/Packages
+ 35d361445e8a93bfc4615f74c3bfcf1ba507b35a              608 main/binary-arm64/Packages.gz
 SHA256:
- bde40a84664838261a2c28f44803a4ec51331fe5e7d4702d7e45586ba40383c3              160 Release
- 897a61d1ce168b08790d8bf605673375b4e4392f4e08dd1d9484ba46b64d74c7              898 main/binary-arm64/Packages
- 88cc2df07c0a4181762e391c680bb7f33555b28beab852719b631aa6d548c495              607 main/binary-arm64/Packages.gz
+ d3cfe78884d6d30005037d52213643912dd2b242aad0d29462c346f915e99e08              160 Release
+ 729b4d3c0f2b94a777e7c0fbc122a68e2ee2762173f7a597b950f23e39e526b2              898 main/binary-arm64/Packages
+ 2f4dda587906d0adfd282071f57f7c94e0735a45f61661801103ded07496e082              608 main/binary-arm64/Packages.gz
 SHA512:
- 8198159eff54bc53787f0774a6207e15056a30c6a6b9663626016243eee94c2dab3e07daf4f4fdedb6b73eecef175172a2058c747f699f9d057903d01e4b5082              160 Release
- c9a44283fa33bf69ecb5ff53d2b2577b80a311df388971db73a0ccc95dbbe70dc4ce48787bcf66c58564c3a5e55ae7e1682aacbdad5af28e76c9f025c35c0e46              898 main/binary-arm64/Packages
- 6e500d446ac9446535d860f5e27e523aafcd23d9e5a6f555bfe42a4fc24cea036a38065157c860efc29a38ce9f41aef20bee3942c716153e5952fc0a6a7511f8              607 main/binary-arm64/Packages.gz
+ cb964dec32c9f6f5cb32b98c64e154822baf30c610f324588e6e9b9342ada966314f7424011a01256a69db8a7b5d374d2e56f6cef1af8c822597d80e46661391              160 Release
+ c1b233c02ee42922daae594d59f21a30ca3c259f809ac8fd3dbacf5776b2c76a99748ba5a8700da3206d7534d78015a1417960f7bfa0ed4b1afbf5363dc37add              898 main/binary-arm64/Packages
+ c935eaf4320f44cefe642218d7dd01e4a7877142c173d0b1b3651448cb70cba61e6152382442fcb74072f6ffed9f4cf4f5e015e2eec48a2345fc6b2677459321              608 main/binary-arm64/Packages.gz
