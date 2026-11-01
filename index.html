@@ -4,14 +4,37 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fluxplan SignageOS</title>
-<meta name="description" content="Turn a Raspberry Pi into a Fluxplan screen that looks after itself. Download the SD card image, and set it up with your phone.">
+<meta name="description" content="Turn a Raspberry Pi into a Fluxplan screen that looks after itself. Download the SD card image, and set it up with your phone." data-en="Turn a Raspberry Pi into a Fluxplan screen that looks after itself. Download the SD card image, and set it up with your phone." data-nl="Maak van een Raspberry Pi een Fluxplan-scherm dat voor zichzelf zorgt. Download het SD-kaartimage, en stel het in met je telefoon.">
 <link rel="icon" href="icon.png">
+<link rel="canonical" href="https://signageos.fluxplan.nl/">
+<script>
+    // Language and theme before the first paint, so nothing flips while loading.
+    // The language: ?lang=, then the visitor's earlier choice, then the browser's.
+    (() => {
+        const root = document.documentElement;
+        const known = (lang) => (lang === 'nl' || lang === 'en') ? lang : null;
+        let lang = null, theme = null;
+        try {
+            lang = known(new URLSearchParams(location.search).get('lang')) || known(localStorage.getItem('lang'));
+            theme = localStorage.getItem('theme');
+        } catch (e) {}
+        if (!lang) {
+            for (const tag of navigator.languages || [navigator.language || '']) {
+                lang = known(tag.slice(0, 2).toLowerCase());
+                if (lang) { break; }
+            }
+        }
+        root.lang = lang || 'en';
+        if (theme === 'light' || theme === 'dark') { root.dataset.theme = theme; }
+    })();
+</script>
 <style>
     @font-face { font-family: "Instrument Sans"; src: url("fonts/InstrumentSans.ttf") format("truetype"); font-weight: 400 700; font-stretch: 75% 100%; font-display: swap; }
     @font-face { font-family: "IBM Plex Mono"; src: url("fonts/IBMPlexMono-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
     @font-face { font-family: "IBM Plex Mono"; src: url("fonts/IBMPlexMono-SemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
 
     :root {
+        color-scheme: light dark;
         --bg: #f6f6f2; --card: #ffffff; --line: #e2e3dc; --row: #ecece6; --field: #f6f6f2; --field-line: #d8d9d1; --segment: #f1f1ec;
         --text: #121410; --body: #3d4339; --muted: #5d6458; --accent: #1d6b4c; --accent-hover: #134a34; --accent-soft: #e8f3ee; --on-accent: #ffffff;
         --code: #ecece6; --warn: #a3321f; --issue: #9a5b00;
@@ -19,13 +42,25 @@
         --sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
         --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
     }
+    /* Dark: by the system setting, unless the visitor picked light; or picked dark. */
     @media (prefers-color-scheme: dark) {
-        :root {
+        :root:not([data-theme="light"]) {
             --bg: #0b0b0a; --card: #141413; --line: #262624; --row: #1f1f1d; --field: #0b0b0a; --field-line: #33332f; --segment: #1d1d1b;
             --text: #f4f4ef; --body: #d0d0ca; --muted: #a9a9a3; --accent: #5fd3a0; --accent-hover: #8fe3bd; --accent-soft: #10271d; --on-accent: #06120c;
             --code: #1f1f1d; --warn: #ff9a8a; --issue: #f2b45a;
         }
     }
+    :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #0b0b0a; --card: #141413; --line: #262624; --row: #1f1f1d; --field: #0b0b0a; --field-line: #33332f; --segment: #1d1d1b;
+        --text: #f4f4ef; --body: #d0d0ca; --muted: #a9a9a3; --accent: #5fd3a0; --accent-hover: #8fe3bd; --accent-soft: #10271d; --on-accent: #06120c;
+        --code: #1f1f1d; --warn: #ff9a8a; --issue: #f2b45a;
+    }
+    :root[data-theme="light"] { color-scheme: light; }
+
+    /* Both languages are in the page; only the one of <html lang> shows. */
+    html[lang="nl"] body [lang="en"], html[lang="en"] body [lang="nl"] { display: none !important; }
+
     * { box-sizing: border-box; }
     html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
     body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 var(--sans); }
@@ -52,12 +87,26 @@
     /* Header */
     header { background: var(--dark); color: var(--dark-text); }
     header .wrap { padding-top: 32px; padding-bottom: 88px; display: flex; flex-direction: column; gap: 72px; }
-    .top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px 32px; }
+    /* One row: brand, nav, switches. Too narrow for that, and the switches stay
+       up by the brand while the nav gets a row of its own. */
+    .top { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+    .top nav { flex: 1 1 auto; justify-content: flex-end; }
+    @media (max-width: 1080px) {
+        .top { justify-content: space-between; }
+        .top nav { order: 3; flex-basis: 100%; justify-content: flex-start; }
+    }
     .brand { display: flex; align-items: center; gap: 12px; font-weight: 600; }
     .brand::before { content: ""; width: 12px; height: 12px; border-radius: 3px; background: var(--green); }
     .top nav { display: flex; flex-wrap: wrap; gap: 4px 24px; font-size: 15px; }
     .top nav a { color: #b9b9b3; text-decoration: none; }
     .top nav a:hover { color: var(--dark-text); }
+    .top a:focus-visible, .prefs button:focus-visible { outline-color: var(--green); }
+    .prefs { display: flex; gap: 8px; }
+    .toggle { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--dark-ring); border-radius: 10px; }
+    .toggle button { min-width: 36px; height: 32px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 7px; background: none; color: #b9b9b3; font: 600 13px/1 var(--sans); letter-spacing: .04em; cursor: pointer; }
+    .toggle button:hover { color: var(--dark-text); }
+    .toggle button[aria-pressed="true"] { background: var(--dark-line); color: var(--dark-text); }
+    .toggle svg { stroke: currentColor; }
     .hero { display: flex; flex-wrap: wrap; align-items: center; gap: 56px; }
     .hero-text { flex: 999 1 460px; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
     .hero h1 { font-size: clamp(40px, 6vw, 64px); line-height: 1.04; letter-spacing: -.025em; }
@@ -70,13 +119,15 @@
     .button.outline-dark:hover { border-color: #55554f; color: var(--dark-text); }
     .versions { font-size: 14px; color: var(--dark-faint); font-variant-numeric: tabular-nums; }
     figure.tv { flex: 1 1 380px; min-width: 0; margin: 0; }
-    .bezel { aspect-ratio: 16 / 9; padding: 6px; background: #1a1a18; border-radius: 14px; box-shadow: 0 30px 60px rgba(0, 0, 0, .5); }
+    .bezel { container-type: inline-size; aspect-ratio: 16 / 9; padding: 6px; background: #1a1a18; border-radius: 14px; box-shadow: 0 30px 60px rgba(0, 0, 0, .5); }
     .panel { height: 100%; padding: 6% 7%; display: grid; grid-template-columns: minmax(0, 1fr) 30%; gap: 7%; align-items: center; background: var(--dark); border-radius: 9px; }
     .panel .text { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
     .panel .eyebrow { font-size: 9px; font-weight: 600; letter-spacing: .04em; color: var(--green); }
     .panel .title { font-size: clamp(16px, 2vw, 22px); font-weight: 600; line-height: 1; letter-spacing: -.02em; }
-    .panel .creds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 8px 10px; background: var(--dark-card); border: 1px solid var(--dark-line); border-radius: 7px; }
-    .panel .creds span { display: flex; flex-direction: column; font-size: 11px; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+    .panel .creds { display: grid; grid-template-columns: max-content max-content; justify-content: start; gap: 8px 16px; padding: 8px 10px; background: var(--dark-card); border: 1px solid var(--dark-line); border-radius: 7px; }
+    /* The network name stays on one line, as on the real screen: columns as wide
+       as their text, and the text a little smaller in a small mock-up. */
+    .panel .creds span { display: flex; flex-direction: column; font-size: min(11px, 2.9cqi); font-weight: 600; white-space: nowrap; }
     .panel .creds small { font-size: 6px; letter-spacing: .1em; color: #8a8a85; font-family: var(--sans); }
     .panel .pw { color: var(--green); font-family: var(--mono); }
     .panel .qr { aspect-ratio: 1; padding: 10%; background: #fff; border-radius: 8px; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); }
@@ -90,13 +141,15 @@
     /* Downloads */
     .split { display: flex; flex-wrap: wrap; gap: 48px; }
     .split > * { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
-    .release { gap: 10px; }
+    /* The two release cards share their rows, so their buttons line up
+       however long the text above or below them is in either language. */
+    .release { display: grid; grid-row: span 5; grid-template-rows: subgrid; row-gap: 10px; align-content: start; }
     .release .kind { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
     .release .kind.new { color: var(--accent); }
     .release strong { font-size: 20px; }
-    .release strong span { font-family: var(--mono); font-size: 16px; font-weight: 400; color: var(--muted); }
-    .release p { flex-grow: 1; color: var(--muted); font-size: 16px; }
-    .release .button { margin-top: 6px; min-height: 44px; }
+    .release strong span[data-image-version], .release strong span[data-player-version] { font-family: var(--mono); font-size: 16px; font-weight: 400; color: var(--muted); }
+    .release p { color: var(--muted); font-size: 16px; }
+    .release .button { margin-top: 6px; min-height: 44px; align-self: end; }
     .button.solid { background: var(--accent); color: var(--on-accent); }
     .button.solid:hover { background: var(--accent-hover); color: var(--on-accent); }
     .button.outline { border: 1px solid var(--field-line); color: var(--text); }
@@ -105,9 +158,11 @@
 
     /* Install */
     ol.steps { list-style: none; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); counter-reset: step; }
-    ol.steps li { counter-increment: step; gap: 12px; }
+    /* The steps share their rows (number, title, text, link), so titles and
+       texts line up across the cards when a title wraps in one of them. */
+    ol.steps li { counter-increment: step; display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 12px; align-content: start; }
     ol.steps li::before { content: counter(step); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; }
-    ol.steps li > a { align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+    ol.steps li > a { justify-self: start; align-self: start; min-height: 44px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
     .note { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 14px; padding: 18px 22px; background: var(--accent-soft); border-radius: 14px; }
     .note svg { margin-top: 2px; stroke: var(--accent); }
 
@@ -136,7 +191,7 @@
     .output { flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
     .file { display: flex; flex-direction: column; background: var(--dark); border-radius: 20px; overflow: hidden; }
     .file header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--dark-line); background: none; }
-    .file header span { font-family: var(--mono); font-size: 14px; color: var(--dark-muted); }
+    .file header > span { font-family: var(--mono); font-size: 14px; color: var(--dark-muted); }
     .file header div { display: flex; flex-wrap: wrap; gap: 8px; }
     .file .button { min-height: 40px; padding: 0 16px; font-size: 15px; border-radius: 10px; }
     .button.copy { border: 1px solid var(--dark-ring); background: transparent; color: var(--dark-text); }
@@ -176,28 +231,40 @@
     <div class="wrap">
         <div class="top">
             <span class="brand">Fluxplan SignageOS</span>
-            <nav aria-label="Sections">
-                <a href="#install">Install</a>
-                <a href="#advance">Set up in advance</a>
-                <a href="#card">Files on the card</a>
-                <a href="#messages">Messages</a>
+            <nav aria-label="Sections" data-label-en="Sections" data-label-nl="Onderdelen">
+                <a href="#install"><span lang="en">Install</span><span lang="nl">Installeren</span></a>
+                <a href="#advance"><span lang="en">Set up in advance</span><span lang="nl">Vooraf instellen</span></a>
+                <a href="#card"><span lang="en">Files on the card</span><span lang="nl">Bestanden</span></a>
+                <a href="#messages"><span lang="en">Messages</span><span lang="nl">Meldingen</span></a>
                 <a href="#updates">Updates</a>
-                <a href="#security">Security</a>
+                <a href="#security"><span lang="en">Security</span><span lang="nl">Beveiliging</span></a>
             </nav>
+            <div class="prefs">
+                <div class="toggle" role="group" aria-label="Language" data-label-en="Language" data-label-nl="Taal">
+                    <button type="button" data-set-lang="en" aria-label="English">EN</button>
+                    <button type="button" data-set-lang="nl" aria-label="Nederlands">NL</button>
+                </div>
+                <div class="toggle" role="group" aria-label="Theme" data-label-en="Theme" data-label-nl="Weergave">
+                    <button type="button" data-set-theme="auto" aria-label="Automatic" title="Automatic" data-label-en="Automatic" data-label-nl="Automatisch"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8"></path><path d="M12 16v4"></path></svg></button>
+                    <button type="button" data-set-theme="light" aria-label="Light" title="Light" data-label-en="Light" data-label-nl="Licht"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.9 4.9l1.4 1.4"></path><path d="M17.7 17.7l1.4 1.4"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.9 19.1l1.4-1.4"></path><path d="M17.7 6.3l1.4-1.4"></path></svg></button>
+                    <button type="button" data-set-theme="dark" aria-label="Dark" title="Dark" data-label-en="Dark" data-label-nl="Donker"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></button>
+                </div>
+            </div>
         </div>
 
         <div class="hero">
             <div class="hero-text">
-                <h1>A Fluxplan screen that looks after itself</h1>
-                <p>Turn a Raspberry Pi into a screen for <a href="https://fluxplan.nl">Fluxplan</a>: the day’s planning in the lobby, or a room’s schedule by its door. Set it up once with your phone. No keyboard, mouse or signage software required.</p>
+                <h1><span lang="en">A Fluxplan screen that looks after itself</span><span lang="nl">Een Fluxplan-scherm dat voor zichzelf zorgt</span></h1>
+                <p lang="en">Turn a Raspberry Pi into a screen for <a href="https://fluxplan.nl">Fluxplan</a>: the day’s planning in the lobby, or a room’s schedule by its door. Set it up once with your phone. No keyboard, mouse or signage software required.</p>
+                <p lang="nl">Maak van een Raspberry Pi een scherm voor <a href="https://fluxplan.nl">Fluxplan</a>: de planning van de dag in de hal, of het rooster van een zaal naast de deur. Je stelt het één keer in met je telefoon. Geen toetsenbord, muis of signagesoftware nodig.</p>
                 <div class="actions">
-                    <a class="button green" href="#get">Download the SD card image</a>
-                    <a class="button outline-dark" href="#install">How to install</a>
+                    <a class="button green" href="#get"><span lang="en">Download image</span><span lang="nl">Image downloaden</span></a>
+                    <a class="button outline-dark" href="#install"><span lang="en">How to install</span><span lang="nl">Zo installeer je het</span></a>
                 </div>
-                <p class="versions"><span data-image-label>Image</span> · <span data-player-label>Player</span> · Raspberry Pi 4 and 5</p>
+                <p class="versions"><span data-image-label>Image</span> · <span data-player-label><span lang="en">Player</span><span lang="nl">Speler</span></span> · Raspberry Pi 4 <span lang="en">and</span><span lang="nl">en</span> 5</p>
             </div>
 
-            <figure class="tv" role="img" aria-label="The screen during setup: the Wi-Fi network SignageOS-3F2A with password 48291736, and a QR code">
+            <figure class="tv" role="img" aria-label="The screen during setup: the Wi-Fi network SignageOS-3F2A with password 48291736, and a QR code" data-label-en="The screen during setup: the Wi-Fi network SignageOS-3F2A with password 48291736, and a QR code" data-label-nl="Het scherm tijdens het instellen: het wifinetwerk SignageOS-3F2A met wachtwoord 48291736, en een QR-code">
                 <div class="bezel" aria-hidden="true">
                     <div class="panel">
                         <div class="text">
@@ -211,7 +278,7 @@
                         <div class="qr" data-qr></div>
                     </div>
                 </div>
-                <figcaption>What the screen shows when it starts for the first time</figcaption>
+                <figcaption><span lang="en">What the screen shows when it starts for the first time</span><span lang="nl">Wat het scherm toont als het voor het eerst start</span></figcaption>
             </figure>
         </div>
     </div>
@@ -221,14 +288,31 @@
     <section>
         <div class="wrap stack">
             <div class="intro">
-                <h2>What it does</h2>
-                <p class="muted">The screen shows the view you pick for it in the Fluxplan admin, and keeps running without anyone touching it.</p>
+                <h2><span lang="en">What it does</span><span lang="nl">Wat het doet</span></h2>
+                <p class="muted" lang="en">The screen shows the view you pick for it in the Fluxplan admin, and keeps running without anyone touching it.</p>
+                <p class="muted" lang="nl">Het scherm toont de weergave die je er in het Fluxplan-beheer voor kiest, en blijft draaien zonder dat iemand ernaar hoeft om te kijken.</p>
             </div>
             <div class="cards">
-                <div class="card"><strong>Set up with your phone</strong><span>The screen shows a temporary Wi-Fi network with an 8-digit password and a QR code. Join it, and a setup page in Dutch or English opens by itself.</span></div>
-                <div class="card"><strong>Managed from Fluxplan</strong><span>Pair a screen with a code, choose what it shows, then update, restart, shut down or reset it from the admin.</span></div>
-                <div class="card"><strong>Updates itself</strong><span>Debian, Raspberry Pi and player updates are installed at night. A new screen fetches the newest player as soon as it is connected.</span></div>
-                <div class="card"><strong>Repairs itself</strong><span>A page that freezes is reloaded, a stuck browser restarted, and in the end the whole Pi. After a power or network cut it comes back by itself.</span></div>
+                <div class="card">
+                    <strong><span lang="en">Set up with your phone</span><span lang="nl">Instellen met je telefoon</span></strong>
+                    <span lang="en">The screen shows a temporary Wi-Fi network with an 8-digit password and a QR code. Join it, and a setup page in Dutch or English opens by itself.</span>
+                    <span lang="nl">Het scherm toont een tijdelijk wifinetwerk met een wachtwoord van 8 cijfers en een QR-code. Verbind je telefoon ermee, en er opent vanzelf een instelpagina in het Nederlands of Engels.</span>
+                </div>
+                <div class="card">
+                    <strong><span lang="en">Managed from Fluxplan</span><span lang="nl">Beheerd vanuit Fluxplan</span></strong>
+                    <span lang="en">Pair a screen with a code, choose what it shows, then update, restart, shut down or reset it from the admin.</span>
+                    <span lang="nl">Koppel een scherm met een code, kies wat het toont, en werk het bij, herstart, schakel het uit of zet het terug naar fabrieksinstellingen vanuit het beheer.</span>
+                </div>
+                <div class="card">
+                    <strong><span lang="en">Updates itself</span><span lang="nl">Werkt zichzelf bij</span></strong>
+                    <span lang="en">Debian, Raspberry Pi and player updates are installed at night. A new screen fetches the newest player as soon as it is connected.</span>
+                    <span lang="nl">Updates van Debian, Raspberry Pi en de speler worden ’s&nbsp;nachts geïnstalleerd. Een nieuw scherm haalt de nieuwste speler op zodra het verbinding heeft.</span>
+                </div>
+                <div class="card">
+                    <strong><span lang="en">Repairs itself</span><span lang="nl">Herstelt zichzelf</span></strong>
+                    <span lang="en">A page that freezes is reloaded, a stuck browser restarted, and in the end the whole Pi. After a power or network cut it comes back by itself.</span>
+                    <span lang="nl">Een pagina die vastloopt wordt herladen, een vastgelopen browser herstart, en als laatste de hele Pi. Na een stroom- of netwerkstoring komt het scherm vanzelf terug.</span>
+                </div>
             </div>
         </div>
     </section>
@@ -236,8 +320,8 @@
     <section id="get">
         <div class="wrap split">
             <div style="flex: 1 1 340px;">
-                <h2>What you need</h2>
-                <ul>
+                <h2><span lang="en">What you need</span><span lang="nl">Wat je nodig hebt</span></h2>
+                <ul lang="en">
                     <li>A <strong>Raspberry Pi 4 or 5</strong> with 1 GB of memory or more</li>
                     <li>Its <strong>official power supply</strong>: an underpowered Pi restarts at random</li>
                     <li>A <strong>microSD card</strong> of 8 GB or more; the system takes about 4 GB</li>
@@ -245,28 +329,39 @@
                     <li>A <strong>network</strong>: Wi-Fi or a network cable</li>
                     <li>A <strong>Fluxplan instance</strong> (such as demo.fluxplan.nl) where you are an admin</li>
                 </ul>
-                <p class="small muted">SignageOS is built on Raspberry Pi OS Lite (64-bit): no desktop, only the browser that shows your Fluxplan. That is why it runs well on the smallest Pi 4.</p>
+                <ul lang="nl">
+                    <li>Een <strong>Raspberry Pi 4 of 5</strong> met 1 GB geheugen of meer</li>
+                    <li>De <strong>officiële voeding</strong> ervan: een Pi met te weinig stroom herstart zomaar</li>
+                    <li>Een <strong>microSD-kaart</strong> van 8 GB of meer; het systeem neemt ongeveer 4 GB in beslag</li>
+                    <li>Een <strong>scherm</strong> met HDMI, zoals een tv of monitor, en een micro-HDMI-kabel voor de Pi</li>
+                    <li>Een <strong>netwerk</strong>: wifi of een netwerkkabel</li>
+                    <li>Een <strong>Fluxplan-omgeving</strong> (zoals demo.fluxplan.nl) waarin je beheerder bent</li>
+                </ul>
+                <p class="small muted" lang="en">SignageOS is built on Raspberry Pi OS Lite (64-bit): no desktop, only the browser that shows your Fluxplan. That is why it runs well on the smallest Pi 4.</p>
+                <p class="small muted" lang="nl">SignageOS is gebouwd op Raspberry Pi OS Lite (64-bit): geen bureaublad, alleen de browser die je Fluxplan toont. Daardoor draait het goed op de kleinste Pi 4.</p>
             </div>
             <div style="flex: 999 1 520px;">
                 <h2>Downloads</h2>
-                <p class="muted">There are two kinds of release. You only ever download the image: screens that are running fetch the player by themselves.</p>
+                <p class="muted" lang="en">There are two kinds of release. You only ever download the image: screens that are running fetch the player by themselves.</p>
+                <p class="muted" lang="nl">Er zijn twee soorten releases. Je downloadt alleen het image: schermen die al draaien, halen de speler zelf op.</p>
                 <div class="cards">
                     <div class="card release">
-                        <span class="kind new">For a new screen</span>
-                        <strong>SD card image <span data-image-version></span></strong>
-                        <p>Raspberry Pi OS with the player, ready to write to a card.<span data-image-size></span></p>
-                        <a class="button solid" href="https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases/latest" data-image-download>Download image</a>
-                        <small data-image-release>The newest image, with a SHA-256 checksum</small>
+                        <span class="kind new"><span lang="en">For a new screen</span><span lang="nl">Voor een nieuw scherm</span></span>
+                        <strong><span lang="en">SD card image</span><span lang="nl">SD-kaartimage</span> <span data-image-version></span></strong>
+                        <p><span lang="en">Raspberry Pi OS with the player, ready to write to a card.</span><span lang="nl">Raspberry Pi OS met de speler, klaar om op een kaart te zetten.</span><span data-image-size></span></p>
+                        <a class="button solid" href="https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases/latest" data-image-download><span lang="en">Download image</span><span lang="nl">Image downloaden</span></a>
+                        <small data-image-release><span lang="en">The newest image, with a SHA-256 checksum</span><span lang="nl">Het nieuwste image, met een SHA-256-controlesom</span></small>
                     </div>
                     <div class="card release">
-                        <span class="kind">Installs itself</span>
-                        <strong>Player <span data-player-version></span></strong>
-                        <p>Running screens update to it at night, or right away with <em>Update player</em> in the admin.</p>
-                        <a class="button outline" href="https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases" data-player-notes>What’s new</a>
-                        <small data-player-release>The newest player, as a <code>.deb</code></small>
+                        <span class="kind"><span lang="en">Installs itself</span><span lang="nl">Installeert zichzelf</span></span>
+                        <strong><span lang="en">Player</span><span lang="nl">Speler</span> <span data-player-version></span></strong>
+                        <p lang="en">Running screens update to it at night, or right away with <em>Update player</em> in the admin.</p>
+                        <p lang="nl">Schermen die draaien, werken ’s&nbsp;nachts bij naar deze versie, of meteen met <em>Speler bijwerken</em> in het beheer.</p>
+                        <a class="button outline" href="https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases" data-player-notes><span lang="en">What’s new</span><span lang="nl">Wat is er nieuw</span></a>
+                        <small data-player-release><span lang="en">The newest player, as a <code>.deb</code></span><span lang="nl">De nieuwste speler, als <code>.deb</code></span></small>
                     </div>
                 </div>
-                <p class="small muted"><a href="https://www.raspberrypi.com/software/">Raspberry Pi Imager</a> can list the image too: <code>rpi-imager --repo https://enjoytheshow-nl.github.io/fluxplan-signageos-releases/imager.json</code></p>
+                <p class="small muted"><a href="https://www.raspberrypi.com/software/">Raspberry Pi Imager</a> <span lang="en">can list the image too:</span><span lang="nl">kan het image ook tonen:</span> <code>rpi-imager --repo https://signageos.fluxplan.nl/imager.json</code></p>
             </div>
         </div>
     </section>
@@ -274,31 +369,37 @@
     <section id="install">
         <div class="wrap stack">
             <div class="intro">
-                <h2>Installing a screen</h2>
-                <p class="muted">About ten minutes, most of it writing the card.</p>
+                <h2><span lang="en">Installing a screen</span><span lang="nl">Een scherm installeren</span></h2>
+                <p class="muted" lang="en">About ten minutes, most of it writing the card.</p>
+                <p class="muted" lang="nl">Ongeveer tien minuten, waarvan het meeste het schrijven van de kaart.</p>
             </div>
             <ol class="steps">
                 <li class="card">
-                    <strong>Write the image to a card</strong>
-                    <span>Use Raspberry Pi Imager, on Windows, macOS or Linux: Choose OS → Use custom, and pick the image. Leave its OS customisation off: the screen sets itself up.</span>
-                    <a href="https://www.raspberrypi.com/software/">Get Raspberry Pi Imager<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"></path><path d="M9 7h8v8"></path></svg></a>
+                    <strong><span lang="en">Write the image to a card</span><span lang="nl">Zet het image op een kaart</span></strong>
+                    <span lang="en">Use Raspberry Pi Imager, on Windows, macOS or Linux: Choose OS → Use custom, and pick the image. Leave its OS customisation off: the screen sets itself up.</span>
+                    <span lang="nl">Gebruik Raspberry Pi Imager, op Windows, macOS of Linux: Choose OS → Use custom, en kies het image. Laat de OS-aanpassingen (OS customisation) uit: het scherm stelt zichzelf in.</span>
+                    <a href="https://www.raspberrypi.com/software/"><span lang="en">Get Raspberry Pi Imager</span><span lang="nl">Download Raspberry Pi Imager</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"></path><path d="M9 7h8v8"></path></svg></a>
                 </li>
                 <li class="card">
-                    <strong>Start the Pi</strong>
-                    <span>Put the card in the Pi, connect the screen and a network cable if you use one, and then the power.</span>
+                    <strong><span lang="en">Start the Pi</span><span lang="nl">Start de Pi</span></strong>
+                    <span lang="en">Put the card in the Pi, connect the screen and a network cable if you use one, and then the power.</span>
+                    <span lang="nl">Steek de kaart in de Pi, sluit het scherm aan en een netwerkkabel als je die gebruikt, en dan de stroom.</span>
                 </li>
                 <li class="card">
-                    <strong>Set it up with your phone</strong>
-                    <span>Join the Wi-Fi network on the screen, SignageOS-XXXX, with the 8-digit password, or scan the QR code. Choose Wi-Fi or cable, enter your Fluxplan address and country, and save.</span>
+                    <strong><span lang="en">Set it up with your phone</span><span lang="nl">Stel het in met je telefoon</span></strong>
+                    <span lang="en">Join the Wi-Fi network on the screen, SignageOS-XXXX, with the 8-digit password, or scan the QR code. Choose Wi-Fi or cable, enter your Fluxplan address and country, and save.</span>
+                    <span lang="nl">Verbind je telefoon met het wifinetwerk op het scherm, SignageOS-XXXX, met het wachtwoord van 8 cijfers, of scan de QR-code. Kies wifi of kabel, vul je Fluxplan-adres en land in, en sla op.</span>
                 </li>
                 <li class="card">
-                    <strong>Pair it in Fluxplan</strong>
-                    <span>The screen shows a pairing code. In the admin, go to Operations › Narrowcasting › SignageOS screens, choose Pair screen, enter the code and choose what the screen shows.</span>
+                    <strong><span lang="en">Pair it in Fluxplan</span><span lang="nl">Koppel het in Fluxplan</span></strong>
+                    <span lang="en">The screen shows a pairing code. In the admin, go to Operations › Narrowcasting › SignageOS screens, choose Pair screen, enter the code and choose what the screen shows.</span>
+                    <span lang="nl">Het scherm toont een koppelcode. Ga in het beheer naar Operatie › Narrowcasting › SignageOS-schermen, kies Scherm koppelen, vul de code in en kies wat het scherm toont.</span>
                 </li>
             </ol>
             <div class="note">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg>
-                <p>On the setup network, the setup page usually opens by itself. If it doesn’t, open <code>http://10.42.0.1</code> in your phone’s browser. If something goes wrong while connecting, the screen and the phone say which step failed, and the setup network comes back so you can try again.</p>
+                <p lang="en">On the setup network, the setup page usually opens by itself. If it doesn’t, open <code>http://10.42.0.1</code> in your phone’s browser. If something goes wrong while connecting, the screen and the phone say which step failed, and the setup network comes back so you can try again.</p>
+                <p lang="nl">Op het instelnetwerk opent de instelpagina meestal vanzelf. Gebeurt dat niet, open dan <code>http://10.42.0.1</code> in de browser van je telefoon. Gaat er iets mis bij het verbinden, dan zeggen het scherm en de telefoon welke stap mislukte, en komt het instelnetwerk terug zodat je het opnieuw kunt proberen.</p>
             </div>
         </div>
     </section>
@@ -306,42 +407,44 @@
     <section id="advance">
         <div class="wrap stack" style="gap: 40px;">
             <div class="intro">
-                <h2>Setting up in advance: <code style="font-size: .9em;">fluxplan.json</code></h2>
-                <p class="muted">Preparing several screens, or installing one where nobody can use a phone? Put the Fluxplan address and network on the card beforehand, and the screen skips the setup step. It goes straight to its pairing code.</p>
+                <h2><span lang="en">Setting up in advance:</span><span lang="nl">Vooraf instellen:</span> <code style="font-size: .9em;">fluxplan.json</code></h2>
+                <p class="muted" lang="en">Preparing several screens, or installing one where nobody can use a phone? Put the Fluxplan address and network on the card beforehand, and the screen skips the setup step. It goes straight to its pairing code.</p>
+                <p class="muted" lang="nl">Bereid je meerdere schermen voor, of installeer je er een waar niemand een telefoon kan gebruiken? Zet het Fluxplan-adres en het netwerk vooraf op de kaart, en het scherm slaat de instelstap over. Het toont meteen zijn koppelcode.</p>
             </div>
 
             <div class="maker">
-                <form aria-label="Make a fluxplan.json" data-maker>
+                <form aria-label="Make a fluxplan.json" data-label-en="Make a fluxplan.json" data-label-nl="Maak een fluxplan.json" data-maker>
                     <div>
-                        <strong>Make your file</strong>
-                        <span class="small muted">Fill this in and download the file. Nothing you type leaves this page.</span>
+                        <strong><span lang="en">Make your file</span><span lang="nl">Maak je bestand</span></strong>
+                        <span class="small muted" lang="en">Fill this in and download the file. Nothing you type leaves this page.</span>
+                        <span class="small muted" lang="nl">Vul dit in en download het bestand. Wat je typt, verlaat deze pagina niet.</span>
                     </div>
                     <div class="field">
-                        <label for="server">Fluxplan address</label>
+                        <label for="server"><span lang="en">Fluxplan address</span><span lang="nl">Fluxplan-adres</span></label>
                         <div class="prefixed"><span aria-hidden="true">https://</span><input id="server" name="server" type="text" inputmode="url" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="demo.fluxplan.nl" aria-describedby="server-hint"></div>
-                        <span class="hint" id="server-hint">Fill this in to download the file.</span>
+                        <span class="hint" id="server-hint"><span lang="en">Fill this in to download the file.</span><span lang="nl">Vul dit in om het bestand te downloaden.</span></span>
                     </div>
                     <fieldset class="field">
-                        <legend>Connection</legend>
+                        <legend><span lang="en">Connection</span><span lang="nl">Verbinding</span></legend>
                         <div class="segments">
-                            <label><input type="radio" name="mode" value="wifi" checked>Wi-Fi</label>
-                            <label><input type="radio" name="mode" value="cable">Network cable</label>
+                            <label><input type="radio" name="mode" value="wifi" checked><span lang="en">Wi-Fi</span><span lang="nl">Wifi</span></label>
+                            <label><input type="radio" name="mode" value="cable"><span lang="en">Network cable</span><span lang="nl">Netwerkkabel</span></label>
                         </div>
                     </fieldset>
                     <div class="field" data-wifi style="gap: 18px;">
                         <div class="field">
-                            <label for="ssid">Network name</label>
+                            <label for="ssid"><span lang="en">Network name</span><span lang="nl">Netwerknaam</span></label>
                             <input id="ssid" name="ssid" type="text" spellcheck="false" autocapitalize="off" autocorrect="off">
                         </div>
                         <div class="field">
-                            <label for="password">Password</label>
+                            <label for="password"><span lang="en">Password</span><span lang="nl">Wachtwoord</span></label>
                             <input id="password" name="password" type="text" class="mono" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" aria-describedby="password-hint">
                             <span class="hint" id="password-hint" data-password-hint></span>
                         </div>
-                        <label class="check"><input type="checkbox" name="hidden">The network is hidden (it does not show in lists)</label>
+                        <label class="check"><input type="checkbox" name="hidden"><span lang="en">The network is hidden (it does not show in lists)</span><span lang="nl">Het netwerk is verborgen (het staat niet in lijsten)</span></label>
                     </div>
                     <div class="field">
-                        <label for="country">Country</label>
+                        <label for="country"><span lang="en">Country</span><span lang="nl">Land</span></label>
                         <select id="country" name="country" aria-describedby="country-hint">
                             <option value="NL">Netherlands (NL)</option>
                             <option value="BE">Belgium (BE)</option>
@@ -363,7 +466,7 @@
                             <option value="CZ">Czechia (CZ)</option>
                             <option value="US">United States (US)</option>
                         </select>
-                        <span class="hint" id="country-hint">Decides which Wi-Fi channels the screen may use.</span>
+                        <span class="hint" id="country-hint"><span lang="en">Decides which Wi-Fi channels the screen may use.</span><span lang="nl">Bepaalt welke wifikanalen het scherm mag gebruiken.</span></span>
                     </div>
                 </form>
 
@@ -373,7 +476,7 @@
                             <span>fluxplan.json</span>
                             <div>
                                 <button class="button copy" type="button" data-copy><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg><span aria-live="polite" data-copy-label>Copy</span></button>
-                                <button class="button green" type="button" data-download><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg>Download</button>
+                                <button class="button green" type="button" data-download><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg><span lang="en">Download</span><span lang="nl">Downloaden</span></button>
                             </div>
                         </header>
                         <pre data-json>{
@@ -386,26 +489,31 @@
     }
 }</pre>
                     </div>
-                    <ol>
+                    <ol lang="en">
                         <li>Write the image to the card, then take the card out and put it back in your computer.</li>
                         <li>Open the drive called <strong>bootfs</strong>. It holds many files, such as <code>config.txt</code>, <code>cmdline.txt</code> and <code>FLUXPLAN-README.txt</code>.</li>
                         <li>Put <code>fluxplan.json</code> in it, next to those files, not in a folder. Eject the card, and put it in the Pi.</li>
+                    </ol>
+                    <ol lang="nl">
+                        <li>Zet het image op de kaart, haal de kaart eruit en steek hem weer in je computer.</li>
+                        <li>Open de schijf <strong>bootfs</strong>. Daarin staan veel bestanden, zoals <code>config.txt</code>, <code>cmdline.txt</code> en <code>FLUXPLAN-README.txt</code>.</li>
+                        <li>Zet <code>fluxplan.json</code> erin, naast die bestanden, niet in een map. Werp de kaart uit en steek hem in de Pi.</li>
                     </ol>
                 </div>
             </div>
 
             <div class="stack" style="gap: 16px;">
-                <h3>What goes in the file</h3>
+                <h3><span lang="en">What goes in the file</span><span lang="nl">Wat er in het bestand staat</span></h3>
                 <div class="table">
                     <table class="fields">
-                        <thead><tr><th scope="col">Key</th><th scope="col">Needed</th><th scope="col">What it is</th></tr></thead>
+                        <thead><tr><th scope="col"><span lang="en">Key</span><span lang="nl">Sleutel</span></th><th scope="col"><span lang="en">Needed</span><span lang="nl">Nodig</span></th><th scope="col"><span lang="en">What it is</span><span lang="nl">Wat het is</span></th></tr></thead>
                         <tbody>
-                            <tr><td class="nowrap"><code>server</code></td><td class="nowrap muted">Yes</td><td>Your Fluxplan address, such as demo.fluxplan.nl. A full address with https:// works too.</td></tr>
-                            <tr><td class="nowrap"><code>country</code></td><td class="nowrap muted">Advised</td><td>Two-letter country code, such as NL, BE or DE. Decides which Wi-Fi channels the screen may use. Without it, the screen uses NL.</td></tr>
-                            <tr><td class="nowrap"><code>wifi</code></td><td class="nowrap muted">For Wi-Fi</td><td>The Wi-Fi network. Leave it out completely when the screen uses a network cable.</td></tr>
-                            <tr><td class="nowrap"><code>wifi.ssid</code></td><td class="nowrap muted">With wifi</td><td>The network’s name, exactly as it shows on a phone, capitals included.</td></tr>
-                            <tr><td class="nowrap"><code>wifi.password</code></td><td class="nowrap muted">With wifi</td><td>The network’s password, 8 to 63 characters. Empty, or left out, for an open network.</td></tr>
-                            <tr><td class="nowrap"><code>wifi.hidden</code></td><td class="nowrap muted">No</td><td><code>true</code> for a network that does not show in lists. <code>false</code> when left out.</td></tr>
+                            <tr><td class="nowrap"><code>server</code></td><td class="nowrap muted"><span lang="en">Yes</span><span lang="nl">Ja</span></td><td><span lang="en">Your Fluxplan address, such as demo.fluxplan.nl. A full address with https:// works too.</span><span lang="nl">Je Fluxplan-adres, zoals demo.fluxplan.nl. Een volledig adres met https:// werkt ook.</span></td></tr>
+                            <tr><td class="nowrap"><code>country</code></td><td class="nowrap muted"><span lang="en">Advised</span><span lang="nl">Aangeraden</span></td><td><span lang="en">Two-letter country code, such as NL, BE or DE. Decides which Wi-Fi channels the screen may use. Without it, the screen uses NL.</span><span lang="nl">Landcode van twee letters, zoals NL, BE of DE. Bepaalt welke wifikanalen het scherm mag gebruiken. Zonder landcode gebruikt het scherm NL.</span></td></tr>
+                            <tr><td class="nowrap"><code>wifi</code></td><td class="nowrap muted"><span lang="en">For Wi-Fi</span><span lang="nl">Voor wifi</span></td><td><span lang="en">The Wi-Fi network. Leave it out completely when the screen uses a network cable.</span><span lang="nl">Het wifinetwerk. Laat het helemaal weg als het scherm een netwerkkabel gebruikt.</span></td></tr>
+                            <tr><td class="nowrap"><code>wifi.ssid</code></td><td class="nowrap muted"><span lang="en">With wifi</span><span lang="nl">Met wifi</span></td><td><span lang="en">The network’s name, exactly as it shows on a phone, capitals included.</span><span lang="nl">De naam van het netwerk, precies zoals die op een telefoon staat, met hoofdletters.</span></td></tr>
+                            <tr><td class="nowrap"><code>wifi.password</code></td><td class="nowrap muted"><span lang="en">With wifi</span><span lang="nl">Met wifi</span></td><td><span lang="en">The network’s password, 8 to 63 characters. Empty, or left out, for an open network.</span><span lang="nl">Het wachtwoord van het netwerk, 8 tot 63 tekens. Leeg, of weggelaten, voor een open netwerk.</span></td></tr>
+                            <tr><td class="nowrap"><code>wifi.hidden</code></td><td class="nowrap muted"><span lang="en">No</span><span lang="nl">Nee</span></td><td><span lang="en"><code>true</code> for a network that does not show in lists. <code>false</code> when left out.</span><span lang="nl"><code>true</code> voor een netwerk dat niet in lijsten staat. <code>false</code> als het is weggelaten.</span></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -413,21 +521,33 @@
 
             <div class="columns">
                 <div>
-                    <h3>What the screen does with it</h3>
-                    <ol>
+                    <h3><span lang="en">What the screen does with it</span><span lang="nl">Wat het scherm ermee doet</span></h3>
+                    <ol lang="en">
                         <li>On its next start, it reads the file and <strong>deletes it right away</strong>, because it holds your Wi-Fi password. A file it cannot read is deleted too.</li>
                         <li>It sets the country, saves the Fluxplan address and the Wi-Fi network, and connects.</li>
                         <li>The screen shows a pairing code. Pair it in the admin as usual.</li>
                         <li>If the network cannot be reached for five minutes, the setup network opens after all, so you can fix it with your phone.</li>
                     </ol>
+                    <ol lang="nl">
+                        <li>Bij de volgende start leest het scherm het bestand en <strong>wist het meteen</strong>, omdat je wifiwachtwoord erin staat. Een bestand dat het niet kan lezen, wordt ook gewist.</li>
+                        <li>Het stelt het land in, bewaart het Fluxplan-adres en het wifinetwerk, en maakt verbinding.</li>
+                        <li>Het scherm toont een koppelcode. Koppel het zoals gewoonlijk in het beheer.</li>
+                        <li>Is het netwerk vijf minuten niet bereikbaar, dan opent het instelnetwerk alsnog, zodat je het met je telefoon kunt oplossen.</li>
+                    </ol>
                 </div>
                 <div>
-                    <h3>If it does not work</h3>
-                    <ul>
+                    <h3><span lang="en">If it does not work</span><span lang="nl">Als het niet werkt</span></h3>
+                    <ul lang="en">
                         <li><strong>Windows hides extensions.</strong> A file saved as <code>fluxplan.json</code> in Notepad can end up as <code>fluxplan.json.txt</code>. Use the download button above, or choose “All files” when saving.</li>
                         <li><strong>Straight quotes only.</strong> Word and TextEdit turn <code>"</code> into curly quotes, which break the file. In TextEdit, choose Format → Make Plain Text first.</li>
                         <li><strong>Commas between items, none after the last.</strong> Every text goes between double quotes.</li>
                         <li><strong>Still the setup screen?</strong> Then the file was missing or could not be read. Put an empty <code>fluxplan-debug</code> file on the card to see why (below).</li>
+                    </ul>
+                    <ul lang="nl">
+                        <li><strong>Windows verbergt extensies.</strong> Een bestand dat je in Kladblok opslaat als <code>fluxplan.json</code> kan <code>fluxplan.json.txt</code> worden. Gebruik de downloadknop hierboven, of kies ‘Alle bestanden’ bij het opslaan.</li>
+                        <li><strong>Alleen rechte aanhalingstekens.</strong> Word en TextEdit maken van <code>"</code> krullende aanhalingstekens, en daar kan het scherm niets mee. Kies in TextEdit eerst Opmaak → Converteer naar platte tekst.</li>
+                        <li><strong>Komma’s tussen de onderdelen, niet na het laatste.</strong> Elke tekst staat tussen dubbele aanhalingstekens.</li>
+                        <li><strong>Nog steeds het instelscherm?</strong> Dan ontbrak het bestand of kon het niet worden gelezen. Zet een leeg bestand <code>fluxplan-debug</code> op de kaart om te zien waarom (hieronder).</li>
                     </ul>
                 </div>
             </div>
@@ -437,19 +557,22 @@
     <section id="card">
         <div class="wrap stack">
             <div class="intro">
-                <h2>Other files on the card</h2>
-                <p class="muted">The card’s <strong>bootfs</strong> drive also takes two instructions. Make an empty file with the name below (<code>.txt</code> at the end is fine too), put the card back, and start the Pi.</p>
+                <h2><span lang="en">Other files on the card</span><span lang="nl">Andere bestanden op de kaart</span></h2>
+                <p class="muted" lang="en">The card’s <strong>bootfs</strong> drive also takes two instructions. Make an empty file with the name below (<code>.txt</code> at the end is fine too), put the card back, and start the Pi.</p>
+                <p class="muted" lang="nl">De schijf <strong>bootfs</strong> op de kaart kent ook twee opdrachten. Maak een leeg bestand met de naam hieronder (<code>.txt</code> erachter mag ook), steek de kaart terug en start de Pi.</p>
             </div>
             <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
                 <div class="card">
                     <code class="name">fluxplan-reset</code>
-                    <strong>Factory reset</strong>
-                    <span>The screen forgets its pairing, its Fluxplan address and its Wi-Fi network, deletes the file, and opens setup again. For a screen that is offline; otherwise use <em>Factory reset</em> in the admin.</span>
+                    <strong><span lang="en">Factory reset</span><span lang="nl">Fabrieksinstellingen</span></strong>
+                    <span lang="en">The screen forgets its pairing, its Fluxplan address and its Wi-Fi network, deletes the file, and opens setup again. For a screen that is offline; otherwise use <em>Factory reset</em> in the admin.</span>
+                    <span lang="nl">Het scherm vergeet zijn koppeling, zijn Fluxplan-adres en zijn wifinetwerk, wist het bestand en opent het instellen opnieuw. Voor een scherm dat offline is; gebruik anders <em>Fabrieksinstellingen</em> in het beheer.</span>
                 </div>
                 <div class="card">
                     <code class="name">fluxplan-debug</code>
-                    <strong>Troubleshooting report</strong>
-                    <span>While it is there, the screen writes <code>fluxplan-debug.log</code> next to it every 30 seconds: what it did, its network and the system logs since it started. No passwords. Unplug the Pi, read the file on your computer, and delete <code>fluxplan-debug</code> when you are done.</span>
+                    <strong><span lang="en">Troubleshooting report</span><span lang="nl">Probleemrapport</span></strong>
+                    <span lang="en">While it is there, the screen writes <code>fluxplan-debug.log</code> next to it every 30 seconds: what it did, its network and the system logs since it started. No passwords. Unplug the Pi, read the file on your computer, and delete <code>fluxplan-debug</code> when you are done.</span>
+                    <span lang="nl">Zolang het er staat, schrijft het scherm elke 30 seconden <code>fluxplan-debug.log</code> ernaast: wat het deed, zijn netwerk en de systeemlogs sinds de start. Geen wachtwoorden. Haal de stekker uit de Pi, lees het bestand op je computer, en wis <code>fluxplan-debug</code> als je klaar bent.</span>
                 </div>
             </div>
         </div>
@@ -458,23 +581,24 @@
     <section id="messages">
         <div class="wrap stack">
             <div class="intro">
-                <h2>Messages on the screen</h2>
-                <p class="muted">When something is wrong, the screen says so in plain words, in Dutch and English, with a short code bottom left. Most of them sort themselves out: the screen keeps trying.</p>
+                <h2><span lang="en">Messages on the screen</span><span lang="nl">Meldingen op het scherm</span></h2>
+                <p class="muted" lang="en">When something is wrong, the screen says so in plain words, in Dutch and English, with a short code bottom left. Most of them sort themselves out: the screen keeps trying.</p>
+                <p class="muted" lang="nl">Als er iets mis is, zegt het scherm dat in gewone woorden, in het Nederlands en Engels, met een korte code linksonder. De meeste lossen zichzelf op: het scherm blijft het proberen.</p>
             </div>
             <div class="table">
                 <table class="codes">
-                    <thead><tr><th scope="col">Code</th><th scope="col">The screen says</th><th scope="col">What to do</th></tr></thead>
+                    <thead><tr><th scope="col">Code</th><th scope="col"><span lang="en">The screen says</span><span lang="nl">Het scherm zegt</span></th><th scope="col"><span lang="en">What to do</span><span lang="nl">Wat te doen</span></th></tr></thead>
                     <tbody>
-                        <tr><td class="nowrap"><code>NET-01</code></td><td>Er is nog geen internet · There is no internet connection yet</td><td>Nothing, at first. If it lasts: check the cable or the Wi-Fi, or unplug the screen for a moment.</td></tr>
-                        <tr><td class="nowrap"><code>NET-02</code></td><td>Fluxplan reageert niet · Fluxplan is not responding</td><td>If it lasts, check whether your Fluxplan opens in a browser.</td></tr>
-                        <tr><td class="nowrap"><code>DNS-01</code></td><td>Dit Fluxplan-adres bestaat niet · This Fluxplan address does not exist</td><td>The address has a typo. Reset the screen and set it up again.</td></tr>
-                        <tr><td class="nowrap"><code>API-429</code></td><td>Even geduld · Just a moment</td><td>Nothing: Fluxplan asked the screen to wait, and it carries on by itself.</td></tr>
-                        <tr><td class="nowrap"><code>API-5XX</code></td><td>Fluxplan is even niet beschikbaar · Fluxplan is briefly unavailable</td><td>If it lasts, contact whoever manages your Fluxplan.</td></tr>
-                        <tr><td class="nowrap"><code>TLS-01</code></td><td>De klok van het scherm wordt gelijkgezet · Setting the screen’s clock</td><td>Nothing: the Pi has no clock battery and sets its clock over the internet first.</td></tr>
-                        <tr><td class="nowrap"><code>TLS-02</code></td><td>De beveiligde verbinding lukt niet · The secure connection fails</td><td>A filter or proxy on the network blocks Fluxplan. Ask for it to be allowed.</td></tr>
-                        <tr class="phone"><td class="nowrap"><code>SET-01</code></td><td>Verbonden, maar Fluxplan niet gevonden · Connected, but Fluxplan was not found</td><td>Check the Fluxplan address on the setup page.</td></tr>
-                        <tr class="phone"><td class="nowrap"><code>WIFI-01</code></td><td>Het wachtwoord klopt niet · The password is not right</td><td>Enter the Wi-Fi password again, minding the capitals.</td></tr>
-                        <tr class="phone"><td class="nowrap"><code>NET-03</code></td><td>Er is geen netwerkkabel aangesloten · No network cable is connected</td><td>Plug in the cable, or choose Wi-Fi.</td></tr>
+                        <tr><td class="nowrap"><code>NET-01</code></td><td>Er is nog geen internet · There is no internet connection yet</td><td><span lang="en">Nothing, at first. If it lasts: check the cable or the Wi-Fi, or unplug the screen for a moment.</span><span lang="nl">Eerst niets. Duurt het lang: controleer de kabel of de wifi, of haal de stekker van het scherm even los.</span></td></tr>
+                        <tr><td class="nowrap"><code>NET-02</code></td><td>Fluxplan reageert niet · Fluxplan is not responding</td><td><span lang="en">If it lasts, check whether your Fluxplan opens in a browser.</span><span lang="nl">Duurt het lang, kijk dan of je Fluxplan in een browser opent.</span></td></tr>
+                        <tr><td class="nowrap"><code>DNS-01</code></td><td>Dit Fluxplan-adres bestaat niet · This Fluxplan address does not exist</td><td><span lang="en">The address has a typo. Reset the screen and set it up again.</span><span lang="nl">Er zit een typfout in het adres. Zet het scherm terug naar fabrieksinstellingen en stel het opnieuw in.</span></td></tr>
+                        <tr><td class="nowrap"><code>API-429</code></td><td>Even geduld · Just a moment</td><td><span lang="en">Nothing: Fluxplan asked the screen to wait, and it carries on by itself.</span><span lang="nl">Niets: Fluxplan vroeg het scherm te wachten, en het gaat vanzelf verder.</span></td></tr>
+                        <tr><td class="nowrap"><code>API-5XX</code></td><td>Fluxplan is even niet beschikbaar · Fluxplan is briefly unavailable</td><td><span lang="en">If it lasts, contact whoever manages your Fluxplan.</span><span lang="nl">Duurt het lang, neem dan contact op met wie je Fluxplan beheert.</span></td></tr>
+                        <tr><td class="nowrap"><code>TLS-01</code></td><td>De klok van het scherm wordt gelijkgezet · Setting the screen’s clock</td><td><span lang="en">Nothing: the Pi has no clock battery and sets its clock over the internet first.</span><span lang="nl">Niets: de Pi heeft geen klokbatterij en zet eerst zijn klok gelijk via internet.</span></td></tr>
+                        <tr><td class="nowrap"><code>TLS-02</code></td><td>De beveiligde verbinding lukt niet · The secure connection fails</td><td><span lang="en">A filter or proxy on the network blocks Fluxplan. Ask for it to be allowed.</span><span lang="nl">Een filter of proxy op het netwerk blokkeert Fluxplan. Vraag of Fluxplan wordt toegestaan.</span></td></tr>
+                        <tr class="phone"><td class="nowrap"><code>SET-01</code></td><td>Verbonden, maar Fluxplan niet gevonden · Connected, but Fluxplan was not found</td><td><span lang="en">Check the Fluxplan address on the setup page.</span><span lang="nl">Controleer het Fluxplan-adres op de instelpagina.</span></td></tr>
+                        <tr class="phone"><td class="nowrap"><code>WIFI-01</code></td><td>Het wachtwoord klopt niet · The password is not right</td><td><span lang="en">Enter the Wi-Fi password again, minding the capitals.</span><span lang="nl">Vul het wifiwachtwoord opnieuw in, en let op hoofdletters.</span></td></tr>
+                        <tr class="phone"><td class="nowrap"><code>NET-03</code></td><td>Er is geen netwerkkabel aangesloten · No network cable is connected</td><td><span lang="en">Plug in the cable, or choose Wi-Fi.</span><span lang="nl">Sluit de kabel aan, of kies wifi.</span></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -484,25 +608,41 @@
     <section id="updates">
         <div class="wrap split">
             <div style="flex: 1 1 400px;">
-                <h2>Updates and the night</h2>
-                <p class="muted">Screens keep themselves up to date, at times when nobody looks.</p>
-                <dl>
+                <h2><span lang="en">Updates and the night</span><span lang="nl">Updates en de nacht</span></h2>
+                <p class="muted" lang="en">Screens keep themselves up to date, at times when nobody looks.</p>
+                <p class="muted" lang="nl">Schermen houden zichzelf bij, op momenten dat niemand kijkt.</p>
+                <dl lang="en">
                     <dt>03:00</dt><dd>Debian, Raspberry Pi and player updates are installed.</dd>
                     <dt>03:30</dt><dd>The browser restarts, for a fresh start each day.</dd>
                     <dt>04:00</dt><dd>The Pi restarts, only when an update needs it.</dd>
                     <dt>Sun 04:30</dt><dd>A weekly restart.</dd>
                 </dl>
-                <p class="small muted">A new screen installs the newest player as soon as it reaches Fluxplan.</p>
+                <dl lang="nl">
+                    <dt>03:00</dt><dd>Updates van Debian, Raspberry Pi en de speler worden geïnstalleerd.</dd>
+                    <dt>03:30</dt><dd>De browser herstart, voor een frisse start elke dag.</dd>
+                    <dt>04:00</dt><dd>De Pi herstart, alleen als een update daarom vraagt.</dd>
+                    <dt>zo 04:30</dt><dd>Een wekelijkse herstart.</dd>
+                </dl>
+                <p class="small muted" lang="en">A new screen installs the newest player as soon as it reaches Fluxplan.</p>
+                <p class="small muted" lang="nl">Een nieuw scherm installeert de nieuwste speler zodra het Fluxplan bereikt.</p>
             </div>
             <div style="flex: 1 1 400px;">
-                <h2>From the admin</h2>
-                <p class="muted">Under <em>Operations › Narrowcasting › SignageOS screens</em>, each screen has a <em>Player</em> menu:</p>
-                <ul>
+                <h2><span lang="en">From the admin</span><span lang="nl">Vanuit het beheer</span></h2>
+                <p class="muted" lang="en">Under <em>Operations › Narrowcasting › SignageOS screens</em>, each screen has a <em>Player</em> menu:</p>
+                <p class="muted" lang="nl">Onder <em>Operatie › Narrowcasting › SignageOS-schermen</em> heeft elk scherm een menu <em>Speler</em>:</p>
+                <ul lang="en">
                     <li><strong>Update player</strong>: install the newest version now instead of tonight.</li>
                     <li><strong>Reload</strong>: start the browser afresh.</li>
                     <li><strong>Restart</strong>: restart the Pi.</li>
                     <li><strong>Shut down</strong>: turn the Pi off, for example before you move it. Unplug and replug the power to start it again.</li>
                     <li><strong>Factory reset</strong>: forget the Fluxplan, the pairing and the Wi-Fi, and go back to setup.</li>
+                </ul>
+                <ul lang="nl">
+                    <li><strong>Speler bijwerken</strong>: installeer de nieuwste versie nu in plaats van vannacht.</li>
+                    <li><strong>Herladen</strong>: start de browser opnieuw.</li>
+                    <li><strong>Herstarten</strong>: herstart de Pi.</li>
+                    <li><strong>Uitschakelen</strong>: zet de Pi uit, bijvoorbeeld voordat je hem verplaatst. Haal de stroom eraf en sluit hem weer aan om hem opnieuw te starten.</li>
+                    <li><strong>Fabrieksinstellingen</strong>: vergeet de Fluxplan, de koppeling en de wifi, en ga terug naar het instellen.</li>
                 </ul>
             </div>
         </div>
@@ -510,12 +650,28 @@
 
     <section id="security">
         <div class="wrap stack">
-            <h2>Security</h2>
+            <h2><span lang="en">Security</span><span lang="nl">Beveiliging</span></h2>
             <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-                <div class="card"><strong>Locked to your Fluxplan</strong><span>The screen only opens its own Fluxplan, and only the views Fluxplan offers. Every other web address is blocked.</span></div>
-                <div class="card"><strong>No way in</strong><span>Nobody can log in to the Pi: the account is locked and SSH is off. The firewall lets in only what setup needs, and the setup network only appears while a screen needs setting up.</span></div>
-                <div class="card"><strong>Signed updates</strong><span>Updates come from the signed apt repository at <code>apt/</code>. Key <a href="apt/fluxplan-signageos-archive-keyring.asc">fluxplan-signageos-archive-keyring.asc</a>, fingerprint <code>C57F 858F A9B2 7EE9 8EA3 13EF 5A39 CD8F 9F30 CF35</code>.</span></div>
-                <div class="card"><strong>Give it its own network</strong><span>We advise running screens apart from your computers, as is good practice with any IoT device: on their own Wi-Fi network, such as a guest or IoT network, or on their own VLAN when wired. A screen only needs to reach the internet (your Fluxplan, updates and the time); nothing needs to reach it.</span></div>
+                <div class="card">
+                    <strong><span lang="en">Locked to your Fluxplan</span><span lang="nl">Alleen je eigen Fluxplan</span></strong>
+                    <span lang="en">The screen only opens its own Fluxplan, and only the views Fluxplan offers. Every other web address is blocked.</span>
+                    <span lang="nl">Het scherm opent alleen zijn eigen Fluxplan, en alleen de weergaven die Fluxplan aanbiedt. Elk ander webadres is geblokkeerd.</span>
+                </div>
+                <div class="card">
+                    <strong><span lang="en">No way in</span><span lang="nl">Niemand komt erin</span></strong>
+                    <span lang="en">Nobody can log in to the Pi: the account is locked and SSH is off. The firewall lets in only what setup needs, and the setup network only appears while a screen needs setting up.</span>
+                    <span lang="nl">Niemand kan inloggen op de Pi: het account is vergrendeld en SSH staat uit. De firewall laat alleen door wat het instellen nodig heeft, en het instelnetwerk verschijnt alleen zolang een scherm ingesteld moet worden.</span>
+                </div>
+                <div class="card">
+                    <strong><span lang="en">Signed updates</span><span lang="nl">Ondertekende updates</span></strong>
+                    <span lang="en">Updates come from the signed apt repository at <code>apt/</code>. Key <a href="apt/fluxplan-signageos-archive-keyring.asc">fluxplan-signageos-archive-keyring.asc</a>, fingerprint <code>C57F 858F A9B2 7EE9 8EA3 13EF 5A39 CD8F 9F30 CF35</code>.</span>
+                    <span lang="nl">Updates komen uit de ondertekende apt-repository op <code>apt/</code>. Sleutel <a href="apt/fluxplan-signageos-archive-keyring.asc">fluxplan-signageos-archive-keyring.asc</a>, vingerafdruk <code>C57F 858F A9B2 7EE9 8EA3 13EF 5A39 CD8F 9F30 CF35</code>.</span>
+                </div>
+                <div class="card">
+                    <strong><span lang="en">Give it its own network</span><span lang="nl">Een eigen netwerk voor je schermen</span></strong>
+                    <span lang="en">We advise running screens apart from your computers, as is good practice with any IoT device: on their own Wi-Fi network, such as a guest or IoT network, or on their own VLAN when wired. A screen only needs to reach the internet (your Fluxplan, updates and the time); nothing needs to reach it.</span>
+                    <span lang="nl">We raden aan schermen apart van je computers te laten draaien, zoals goed gebruik is bij elk IoT-apparaat: op een eigen wifinetwerk, zoals een gasten- of IoT-netwerk, of met een kabel op een eigen VLAN. Een scherm hoeft alleen het internet te bereiken (je Fluxplan, updates en de tijd); niets hoeft het scherm te bereiken.</span>
+                </div>
             </div>
         </div>
     </section>
@@ -523,15 +679,38 @@
 
 <footer>
     <div class="wrap">
-        <span>Fluxplan SignageOS is made by <a href="https://enjoytheshow.nl">Enjoy the Show</a> for <a href="https://fluxplan.nl">Fluxplan</a>.</span>
-        <span>Published from <a href="https://github.com/enjoytheshow-nl/fluxplan-signageos-releases">fluxplan-signageos-releases</a></span>
+        <span lang="en">Fluxplan SignageOS is made by <a href="https://enjoytheshow.nl">Enjoy the Show</a> for <a href="https://fluxplan.nl">Fluxplan</a>.</span>
+        <span lang="nl">Fluxplan SignageOS is gemaakt door <a href="https://enjoytheshow.nl">Enjoy the Show</a> voor <a href="https://fluxplan.nl">Fluxplan</a>.</span>
+        <span><span lang="en">Published from</span><span lang="nl">Gepubliceerd vanuit</span> <a href="https://github.com/enjoytheshow-nl/fluxplan-signageos-releases">fluxplan-signageos-releases</a></span>
     </div>
 </footer>
 
 <script>
 (() => {
     const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => document.querySelectorAll(selector);
+    const root = document.documentElement;
     const releases = 'https://github.com/enjoytheshow-nl/fluxplan-signageos-releases/releases';
+
+    // Text the script writes itself; the rest of the page holds both languages.
+    const strings = {
+        en: {
+            image: 'Image', player: 'Player', about: (mb) => ' About ' + mb + ' MB.', release: 'Release ',
+            checksum: 'SHA-256 checksum', withThe: ', with the ', copy: 'Copy', copied: 'Copied',
+            passwordEmpty: 'Empty: an open network without a password.',
+            passwordBad: 'A Wi-Fi password has 8 to 63 characters.',
+            passwordOk: 'Mind the capitals: passwords are case-sensitive.',
+        },
+        nl: {
+            image: 'Image', player: 'Speler', about: (mb) => ' Ongeveer ' + mb + ' MB.', release: 'Release ',
+            checksum: 'SHA-256-controlesom', withThe: ', met de ', copy: 'Kopiëren', copied: 'Gekopieerd',
+            passwordEmpty: 'Leeg: een open netwerk zonder wachtwoord.',
+            passwordBad: 'Een wifiwachtwoord heeft 8 tot 63 tekens.',
+            passwordOk: 'Let op hoofdletters: wachtwoorden zijn hoofdlettergevoelig.',
+        },
+    };
+    const t = () => strings[root.lang] || strings.en;
+    const store = (key, value) => { try { value ? localStorage.setItem(key, value) : localStorage.removeItem(key); } catch (e) {} };
 
     // The decorative QR code in the header.
     const qr = $('[data-qr]');
@@ -548,7 +727,9 @@
     }
 
     // Versions, from what this site publishes: the Imager listing for the
-    // image, the apt repository for the player.
+    // image, the apt repository for the player. Kept, to write again when the
+    // language changes.
+    let image = null, player = null;
     const newest = (versions) => versions.sort((a, b) => {
         const pa = a.split(/[.~+-]/).map(Number), pb = b.split(/[.~+-]/).map(Number);
         for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
@@ -557,45 +738,49 @@
         }
         return 0;
     }).pop();
+    const link = (href, text) => {
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = text;
+        return a;
+    };
+
+    function showImage() {
+        if (!image) { return; }
+        const { os, tag, version } = image;
+        $('[data-image-version]').textContent = 'v' + version;
+        $('[data-image-label]').textContent = t().image + ' v' + version;
+        $('[data-image-download]').href = os.url;
+        $('[data-image-size]').textContent = t().about(Math.round(os.image_download_size / 1e8) * 100);
+        const release = $('[data-image-release]');
+        release.textContent = t().release;
+        release.append(link(releases + '/tag/' + tag, tag), ', ', link(os.url + '.sha256', t().checksum));
+    }
+
+    function showPlayer() {
+        if (!player) { return; }
+        $('[data-player-version]').textContent = 'v' + player;
+        $('[data-player-label]').textContent = t().player + ' v' + player;
+        $('[data-player-notes]').href = releases + '/tag/v' + player;
+        const release = $('[data-player-release]');
+        const code = document.createElement('code');
+        code.textContent = '.deb';
+        release.textContent = t().release;
+        release.append(link(releases + '/tag/v' + player, 'v' + player), t().withThe, code);
+    }
 
     fetch('imager.json', { cache: 'no-store' }).then((res) => res.json()).then((listing) => {
         const os = listing.os_list[0];
         const match = os.url.match(/\/download\/([^/]+)\//);
         const tag = match ? match[1] : '';
-        const version = tag.replace(/^(image-)?v/, '');
-        $('[data-image-version]').textContent = 'v' + version;
-        $('[data-image-label]').textContent = 'Image v' + version;
-        $('[data-image-download]').href = os.url;
-        $('[data-image-size]').textContent = ' About ' + Math.round(os.image_download_size / 1e8) * 100 + ' MB.';
-        const release = $('[data-image-release]');
-        release.textContent = '';
-        release.append('Release ');
-        const link = document.createElement('a');
-        link.href = releases + '/tag/' + tag;
-        link.textContent = tag;
-        release.append(link, ', ');
-        const sum = document.createElement('a');
-        sum.href = os.url + '.sha256';
-        sum.textContent = 'SHA-256 checksum';
-        release.append(sum);
+        image = { os, tag, version: tag.replace(/^(image-)?v/, '') };
+        showImage();
     }).catch(() => {});
 
     fetch('apt/dists/stable/main/binary-arm64/Packages', { cache: 'no-store' }).then((res) => res.text()).then((packages) => {
         const versions = [...packages.matchAll(/^Version: (.+)$/gm)].map((m) => m[1].trim());
-        const version = newest(versions);
-        if (!version) { return; }
-        $('[data-player-version]').textContent = 'v' + version;
-        $('[data-player-label]').textContent = 'Player v' + version;
-        $('[data-player-notes]').href = releases + '/tag/v' + version;
-        const release = $('[data-player-release]');
-        release.textContent = '';
-        release.append('Release ');
-        const link = document.createElement('a');
-        link.href = releases + '/tag/v' + version;
-        link.textContent = 'v' + version;
-        const code = document.createElement('code');
-        code.textContent = '.deb';
-        release.append(link, ', with the ', code);
+        player = newest(versions) || null;
+        showPlayer();
     }).catch(() => {});
 
     // fluxplan.json: built from the form, downloaded or copied as it is.
@@ -619,13 +804,10 @@
         const hint = $('[data-password-hint]');
         const bad = length > 0 && (length < 8 || length > 63);
         hint.classList.toggle('bad', bad);
-        hint.textContent = length === 0 ? 'Empty: an open network without a password.'
-            : bad ? 'A Wi-Fi password has 8 to 63 characters.'
-            : 'Mind the capitals: passwords are case-sensitive.';
+        hint.textContent = length === 0 ? t().passwordEmpty : bad ? t().passwordBad : t().passwordOk;
     }
     form.addEventListener('input', update);
     form.addEventListener('submit', (e) => e.preventDefault());
-    update();
 
     $('[data-download]').addEventListener('click', () => {
         const url = URL.createObjectURL(new Blob([file()], { type: 'application/json' }));
@@ -642,11 +824,58 @@
     $('[data-copy]').addEventListener('click', () => {
         if (!navigator.clipboard) { return; }
         navigator.clipboard.writeText(file()).then(() => {
-            $('[data-copy-label]').textContent = 'Copied';
+            $('[data-copy-label]').textContent = t().copied;
             clearTimeout(copiedTimer);
-            copiedTimer = setTimeout(() => { $('[data-copy-label]').textContent = 'Copy'; }, 2000);
+            copiedTimer = setTimeout(() => { $('[data-copy-label]').textContent = t().copy; }, 2000);
         }, () => {});
     });
+
+    // Language: <html lang> shows one of the two texts; the rest is written here.
+    let regions = null;
+    function setLang(lang) {
+        root.lang = lang;
+        $$('[data-set-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.setLang === lang)));
+        $$('[data-label-' + lang + ']').forEach((el) => {
+            const label = el.getAttribute('data-label-' + lang);
+            el.setAttribute('aria-label', label);
+            if (el.hasAttribute('title')) { el.title = label; }
+        });
+        const description = $('meta[name="description"]');
+        description.content = description.getAttribute('data-' + lang);
+        try { regions = new Intl.DisplayNames([lang], { type: 'region' }); } catch (e) { regions = null; }
+        if (regions) {
+            for (const option of fields.country.options) { option.textContent = regions.of(option.value) + ' (' + option.value + ')'; }
+        }
+        clearTimeout(copiedTimer);
+        $('[data-copy-label]').textContent = t().copy;
+        update();
+        showImage();
+        showPlayer();
+    }
+    $$('[data-set-lang]').forEach((button) => button.addEventListener('click', () => {
+        const lang = button.dataset.setLang;
+        setLang(lang);
+        store('lang', lang);
+        // A shared link with ?lang= keeps saying what is on the screen.
+        const url = new URL(location.href);
+        if (url.searchParams.has('lang')) {
+            url.searchParams.set('lang', lang);
+            history.replaceState(null, '', url);
+        }
+    }));
+    setLang(root.lang === 'nl' ? 'nl' : 'en');
+
+    // Theme: automatic follows the system; light or dark is remembered.
+    function setTheme(theme) {
+        if (theme === 'light' || theme === 'dark') { root.dataset.theme = theme; } else { delete root.dataset.theme; }
+        $$('[data-set-theme]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.setTheme === (root.dataset.theme || 'auto'))));
+    }
+    $$('[data-set-theme]').forEach((button) => button.addEventListener('click', () => {
+        const theme = button.dataset.setTheme;
+        setTheme(theme);
+        store('theme', theme === 'auto' ? null : theme);
+    }));
+    setTheme(root.dataset.theme);
 })();
 </script>
 </body>
